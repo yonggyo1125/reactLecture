@@ -364,3 +364,16 @@ export default EventPractice;
 
 * onKeyPress 이벤트 핸들링
 
+```javascript
+import { Component } from 'react';
+
+class EventPractice extends Component {
+
+    state = {
+        username: '',
+        message: ''
+    }
+}
+
+export default EventPractice;
+```

@@ -383,3 +383,9 @@ class App extends Component {
 
 export default App;
 ```
+
+
+#### 컴포넌트의 라이프사이클 메서드 흐름 
+
+![컴포넌트 라이프사이클 메서드 흐름](https://raw.githubusercontent.com/yonggyo1125/reactLecture/master/6.%20%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98%20%EB%9D%BC%EC%9D%B4%ED%94%84%EC%82%AC%EC%9D%B4%ED%81%B4%20%EB%A9%94%EC%84%9C%EB%93%9C/images/1.png)
+

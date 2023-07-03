@@ -11,11 +11,11 @@
 
 - DOM이 생성되고 웹 브라우저상에 나타나는 것을 마운트(mount)라고 합니다. 이때 호출하는 메서드는 다음과 같습니다.
 - 마운트할 때 호출하는 메서드
-    - 1) 컴포넌트 만들기
-    - 2) **constructor** : 컴포넌트를 새로 만들 때마다 호출되는 클래스 생성자 메서드입니다.
-    - 3) getDerivedStateFromProps
-    - 4) render
-    - 5) componentDidMount
+    - 1 컴포넌트 만들기
+    - 2 **constructor** : 컴포넌트를 새로 만들 때마다 호출되는 클래스 생성자 메서드입니다.
+    - 3 getDerivedStateFromProps
+    - 4 render
+    - 5 componentDidMount
 
 
 

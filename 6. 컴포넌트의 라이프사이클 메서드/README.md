@@ -13,9 +13,20 @@
 - 마운트할 때 호출하는 메서드
     - 1 컴포넌트 만들기
     - 2 **constructor** : 컴포넌트를 새로 만들 때마다 호출되는 클래스 생성자 메서드입니다.
-    - 3 getDerivedStateFromProps
-    - 4 render
-    - 5 componentDidMount
+    - 3 **getDerivedStateFromProps** : props에 있는 값을 state에 넣을 때 사용하는 메서드 입니다.
+    - 4 **render** : UI를 렌더링 하는 메서드입니다.
+    - 5 **componentDidMount** : 컴포넌트가 웹 브라우저상에 나타난 후 호출하는 메서드 입니다.
 
 
+### 업데이트 
 
+- 컴포넌트는 다음과 같은 총 네 가지 경우에 업데이트 합니다.
+    - 1 props가 바뀔 때
+    - 2 state가 바뀔 때
+    - 3 부모 컴포넌트가 리렌더링될 때
+    - 4 this.forceUpdate로 강제로 렌더링을 트리거할 때
+
+- 컴포넌트는 다양한 이유로 업데이트 될 수 있습니다.
+    - 부모 컴포넌트에서 넘겨주는 props가 바뀔때
+
+- 컴포넌트를 업데이트할 때는 다음 메서드를 호출합니다.

@@ -366,3 +366,63 @@ export default Info;
 ```
 
 > useReducer에서의 액션은 그 어떤 값도 사용 가능합니다. 그래서 이번에는 이벤트 객체가 지니고 있는 e.target값 자체를 액션 값으로 사용했습니다. 이런식으로 인풋을 관리하면 아무리 인풋의 개수가 많아져도 코드를 짧고 깔끔하게 유지할 수 있습니다.
+
+#### App.js 
+
+```javascript
+import Info from './Info';
+
+const App = () => {
+	return <Info />;
+};
+
+export default App;
+```
+
+## useMemo
+- useMemo를 사용하면 함수 컴포넌트 내부에서 발생하는 연산을 최적화할 수 있습니다.
+
+#### Average.js
+
+```javascript
+import { useState } from 'react';
+
+const getAverage = numbers => {
+	console.log('평균값 계산 중...');
+	if (numbers.length == 0) return 0;
+	const sum = numbers.reduce((a, b) => a + b);
+	return sum / numbers.length;
+};
+
+const Average = () => {
+	const [list, setList] = useState([]);
+	const [number, setNumber] = useState('');
+
+	const onChange = e => {
+		setNumber(e.target.value);
+	};
+
+	const onInsert = e => {
+		const nextList = list.concat(parseInt(number));
+		setList(nextList);
+		setNumber('');
+	};
+
+	return (
+		<div>
+			<input value={number} onChange={onChange} />
+			<button onClick={onInsert}>등록</button>
+			<ul>
+				{list.map((value, index) => {
+					<li key={index}>{value}</li>
+				})}
+			</ul>
+			<div>
+				<b>평균값:</b> {getAverage(list)}
+			</div>
+		</div>
+	);
+};
+
+export default Average;
+```

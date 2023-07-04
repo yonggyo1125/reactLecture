@@ -105,3 +105,104 @@ $violet: #7950f2;
 	}
 }
 ```
+
+#### SassComponent.js
+
+```javascript
+import './SassComponent.scss'
+
+const SassComponent = () => {
+	return (
+		<div className="SassComponent">
+			<div className="box red" />
+			<div className="box orange" />
+			<div className="box yellow" />
+			<div className="box green" />
+			<div className="box blue" />
+			<div className="box indigo" />
+			<div className="box violet" />
+		</div>
+	);
+};
+
+export default SassComponent;
+```
+
+#### App.js
+
+```javascript
+import { Component } from 'react';
+import SassComponent from './SassComponent';
+
+class App extends Component {
+	render() {
+		return (
+			<div>
+				<SassComponent />
+			</div>
+		);
+	}
+}
+
+export default App;
+```
+
+### utils 함수 분리하기
+
+> 여러 파일에서 사용될 수 있는 Sass 변수 및 믹스인을 다른 파일로 분리하여 작성한 뒤 필요한 곳에서 쉽게 불러와 사용할 수 있습니다.
+
+#### src/styles/utils.scss
+
+```scss
+// 변수 사용하기
+$red: #fa5252;
+$orange: #fd7e14;
+$yellow: #fcc419;
+$green: #40c057;
+$blue: #339af0;
+$indigo: #5cfcfa;
+$violet: #7950f2;
+
+// 믹스인 만들기(재사용되는 스타일 블록을 함수처럼 사용할 수 있음)
+@mixin square($size) {
+	$calculated: 32px * $size;
+	width: $calculated;
+	height: $calculated;
+}
+```
+
+#### SassComponent.scss
+
+```scss
+@import './styles/utils';
+.SassComponent {
+	display: flex;
+	.box { 
+		background: red; // 일반 CSS에서는 .SassComponent .box와 마찬가지 
+		cursor: pointer;
+		transition: all 0.3s ease-in;
+		...
+	}
+}
+```
+
+### sass-loader 설정 커스터마이징하기 
+
+- SassComponent에서 utils를 불러올때 @import './styles/utils'; 형태로 불러올 수 있지만 프로젝트에 따라 디렉토리를 많이 만들어서 구조가 깊어졌다면 상위 폴더로 한참 거슬러 올라가야 한다는 단점이 있습니다.
+
+- 예) src/components/somefeature/ThisComponent.scss
+
+```css
+@import  '../../../styles/utils';
+```
+
+- 이 문제점은 웹팩에서 Sass를 처리하는 sass-loader 설정을 커스터마이징하여 해결할 수 있습니다.
+- create-react-app으로 만든 프로젝트는 구조의 복잡도를 낮추기 위해 세부 설정이 모두 숨겨져 있습니다. 이를 커스터마이징하려면 프로젝트 디렉터리에서 yarn eject 명령어를 통해 세부 설정을 밖으로 꺼내 주어야 합니다.
+- create-react-app에서는 기본적으로 Git 설정이 되어 있는데, yarn eject는 아직 Git에 커밋되지 않은 변화가 있다면 진행되지 않으니, 먼저 커밋해 주어야 합니다.
+
+```
+$ git add .
+$ git commit -m 'Commit before yarn eject'
+$ yarn eject
+$ react-scripts eject
+```

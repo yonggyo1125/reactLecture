@@ -206,3 +206,128 @@ $ git commit -m 'Commit before yarn eject'
 $ yarn eject
 $ react-scripts eject
 ```
+
+#### webpack.config.jd - sassRegex 찾기
+
+```javascript
+{
+	test: sassRegex,
+	exclude: sassModuleRegex,
+	use: getStyleLoaders(
+		{
+			importLoaders: 3, 
+			sourceMap: isEnvProduction
+				? shouldUseSourceMap
+				: isEnvDevelopment,
+		},
+		'sass-loader'
+	),
+	sideEffect: true,
+},
+```
+
+- use:에 있는  'sass-loader' 부분을 지우고, 뒷부분에 concat 을 통해 커스터마이징된 sass-loader 설정을 넣어주세요.
+
+```javascript
+{
+	test: sassRegex,
+	exclude: sassModuleRegex,
+	use: getStyleLoaders(
+		{
+			importLoaders: 3, 
+			sourceMap: isEnvProduction
+				? shouldUseSourceMap
+				: isEnvDevelopment,
+		}).concat({
+			loader: require.resolve("sass-loader"),
+			options: {
+				sassOptions: {
+					includePaths: [paths.appSrc + "styles"],
+				},
+			},
+		}),
+	sideEffect: true,
+},
+```
+
+- 설정 파일을 저장한 후, 서버를 껐다가 재시작합니다. 이제 utils.scss 파일을 불러올 때 현재 수정하고 있는 scss 파일 경로가 어디에 위치하더라도 앞부분에 상대 경로를 입력할 필요 없이 styles 디렉토리 기준 절대 경로를 사용하여 불러올 수 있습니다.
+
+- SassComponent.scss 파일에서 import 구문을 다음과 같이 수정합니다.
+
+```javascript
+@import 'utils.scss';
+```
+
+- 새 파일을 생성할 때마다 utils.scss를 매번 이렇게 포함시키는 것도 번거롭기 떄문에 sass-loader의 additionalData 옵션을 설정하면 됩니다. additionalData 옵션을 설정하면 Sass 파일을 불러올 때마다 코드의 맨 윗부분에 특정코드를 포함시켜 줍니다.
+
+- webpack.config.js를 열어서 sass-loader의 옵션에서 additionalData 필드를 다음과 같이 설정합니다.
+
+```javascript
+{
+	test: sassRegex,
+	exclude: sassModuleRegex,
+	use: getStyleLoaders(
+		{
+			importLoaders: 3, 
+			sourceMap: isEnvProduction
+				? shouldUseSourceMap
+				: isEnvDevelopment,
+		}).concat({
+			loader: require.resolve("sass-loader"),
+			options: {
+				sassOptions: {
+					includePaths: [paths.appSrc + "styles"],
+				},
+				additionalData: "@import 'utils';",
+			},
+		}),
+	sideEffect: true,
+},
+```
+
+- 이렇게 하면 Sass에서 맨 윗줄에 있는 import 구문을 지워도 정상적으로 작동합니다.
+
+### node_modules에서 라이브러리 불러오기
+
+
+- yarn을 통해 설치한 라이브러리를 사용하는 기본적인 방법은 다음과 같이 상대 경로를 사용하여 node_modules까지 들어가서 불러오는 방법
+
+```javascript
+@import '../../../node_modules/library/styles';
+```
+
+- 그러나 이런 구조는 스타일 파일이 깊숙한 디렉터리에 위치할 경우 ../를 매우 많이 적어야 하므로 번거로울 수 있습니다. 이때는 물결 문자(~)를 사용하는 방법이 있습니다.
+
+```javascript
+@import '~library/styles';
+```
+
+- 물결 문자를 사용하면 자동으로 node_modules에서 라이브러리 디렉터리를 탐지하여 스타일을 불러올 수 있습니다.
+
+```javascript
+$ yarn add open-color include-media
+```
+
+#### utils.scss
+
+```css 
+@import '~include-media/dist/include-media';
+@import '~open-color/open-color';
+...
+```
+
+#### SassComponent.scss
+
+```css
+.SassComponent {
+	display: flex;
+	background: $oc-gray-2;
+	@include media('<768px') {
+		background: $oc-gray-9;
+	}
+	...
+}
+```
+
+
+### CSS Module 

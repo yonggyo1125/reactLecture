@@ -7,6 +7,8 @@
 - props
 - state
 
+- [동영상강의](https://drive.google.com/drive/folders/12jmCwioorQrunehjwDCmN0HmqRCAGMha?usp=drive_link)
+
 ## 이벤트 핸들링 
 
 - 리액트의 이벤트 시스템

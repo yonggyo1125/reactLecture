@@ -48,3 +48,10 @@
 - Sass 사용하기
 - CSS Module
 - styled-components
+
+
+## 일정관리 웹 애플리케이션 만들기
+
+- 프로젝트 준비하기
+- UI 구성하기
+- 기능 구현하기

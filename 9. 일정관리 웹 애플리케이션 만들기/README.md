@@ -1,4 +1,4 @@
-# 일정관리 웹 애플리케이션 만들기 
+  # 일정관리 웹 애플리케이션 만들기 
 
 ## 프로젝트 준비하기
 
@@ -61,3 +61,122 @@ export default App;
 
 - src 디렉토리에 components 디렉토리를 생성
 - 그 안에 TodoTemplate.js와 TodoTemplate.scss 파일을 생성
+
+#### TodoTemplate.js
+
+```javascript
+import './TodoTemplate.scss';
+
+const TodoTemplate = ({ children }) => {
+	return (
+		<div className="TodoTemplate">
+			<div className="app-title">일정 관리</div>
+			<div className="content">{children}</div>
+		</div>
+	);
+};
+
+export default TodoTemplate;
+```
+
+#### App.js 
+
+```javascript
+import TodoTemplate from './components/TodoTemplate';
+
+const App = () => {
+	return <TodoTemplate>Todo App을 만들자</TodoTemplate>;
+};
+
+export default App;
+```
+
+#### jsconfig.json
+
+- 닫혀 있는 파일에도 자동 완성 기능이 제대로 동작하려면 프로젝트 최상위 디렉토리에 jsconfig.json 파일을 만들어 주어야 합니다.
+
+```javascript
+{
+	"compilerOptions": {
+		"target": "es6"
+	}
+}
+```
+> jsconfig.json 파일을 저장하고 나면, 불러오려는 컴포넌트 파일이 열려 있지 않아도 자동 완성을 통해 컴포넌트를 불러와서 사용할 수 있습니다.
+
+#### TodoTemplate.scss 
+
+```scss 
+.TodoTemplate {
+	width: 512px;
+	// width가 주어진 상황에서 좌우 중앙 정렬
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 6rem;
+	border-radius: 4px;
+	overflow: hidden;
+	
+	.app-title {
+		background: #22b8cf;
+		color: white;
+		height: 4rem;
+		font-size: 1.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.content {
+		background: white;
+	}
+}
+```
+
+### TodoInsert 만들기 
+
+- components 디렉토리에 TodoInsert.js 파일과 TodoInsert.scss 파일을 생성하세요.
+
+#### TodoInsert.js
+
+```javascript
+import { MdAdd } from 'react-icons/md';
+import './TodoInsert.scss'; 
+
+const TodoInsert = () => {
+	return (
+		<form className="TodoInsert">
+			<input placeholder="할 일을 입력하세요." />
+			<button type="submit">
+				<MdAdd />
+			</button>
+		</form>
+	);
+};
+
+export default TodoInsert;
+```
+
+#### App.js
+
+```javascript
+import TodoTemplate from './components/TodoTemplate';
+import TodoInsert from './components/TodoInsert';
+
+const App = () => {
+	return (
+		<TodoTemplate>
+			<TodoInsert />
+		</TodoTemplate>
+	);
+};
+
+export default App;
+```
+
+#### TodoInsert.scss 
+
+```scss
+.TodoInsert {
+	
+}
+```

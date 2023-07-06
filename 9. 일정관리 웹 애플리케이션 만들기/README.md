@@ -585,3 +585,187 @@ const biggerThanFive = array.filter(number => number > 5);
 
 
 #### todos 배열에서 id로 항목 지우기
+
+- filter 함수를 사용하여 onRemove 함수를 작성합니다.
+
+#### App.js 
+
+```javascript
+import { useState, useRef, useCallback } from 'react';
+import TodoTemplate from './components/TodoTemplate';
+import TodoInsert from './components/TodoInsert';
+import TodoList from './components/TodoList';
+
+const App = () => {
+	...
+
+	const onRemove = useCallback(
+		id => {
+			setTodos(todos.filter(todo => todo.id !== id));
+		},
+		[todos],
+	);
+
+	return (
+		<TodoTemplate>
+			<TodoInsert onInsert={onInsert} />
+			<TodoList todos={todos} onRemove={onRemove} />
+		</TodoTemplate>
+	);
+};
+
+export default App;
+```
+
+#### TodoListItem에서 삭제 함수 호출하기
+
+- TodoListItem에서 onRemove 함수를 사용하려면 TodoList 컴포넌트를 거쳐야 합니다. 
+- props로 받아 온 onRemove 함수를 TodoListItem에 그대로 전달합니다.
+
+#### TodoList.js
+
+```javascript 
+import TodoListItem from './TodoListItem';
+import './TodoList.scss';
+
+const TodoList = ({ todos, onRemove }) => {
+	return (
+		<div className="TodoList">
+			{todos.map(todo => (
+				<TodoListItem todo={todo} key={todo.id} onRemove={onRemove} />
+			))}
+		</div>
+	);
+};
+
+export default TodoList;
+```
+
+#### TodoListItem.js
+
+```javascript
+import {
+	MdCheckBoxOutlineBlank,
+	MdCheckBox,
+	MdRemoveCircleOutline,
+} from 'react-icons/md';
+import cn from 'classnames';
+import './TodoListItem.scss';
+
+const TodoListItem = ({ todo, onRemove }) => {
+	const { id, text, checked } = todo;
+
+	return (
+		<div className="TodoListItem">
+			<div className={cn('checkbox', { checked })}>
+				{checked ? <MdCheckBox /> : <MdCheckBoxOutlineBlank /> }
+				<div className="text">{text}</div>
+			</div>
+			<div className="remove" onClick={() => onRemove(id)}>
+				<MdRemoveCircleOutline />
+			</div>
+		</div>
+	);
+};
+
+export default TodoListItem;
+```
+
+### 수정 기능
+
+- onToggle이라는 함수를 App에 만들고, 해당 함수를 TodoList 컴포넌트에게 props로 넣어 줍니다. 
+- 그 다음에는 TodoList를 통해 TodoListItem까지 전달해 주면 됩니다.
+
+#### onToggle 구현하기
+
+#### App.js
+
+```javascript
+import { useState, useRef, useCallback } from 'react';
+import TodoTemplate from './components/TodoTemplate';
+import TodoInsert from './components/TodoInsert';
+import TodoList from './components/TodoList';
+
+const App = () => {
+	...
+
+	const onToggle = useCallback(
+		id => {
+			setTodos(
+				todos.map(todo => todo.id === id ? { ...todo, checked: !todo.checked} : todo)
+			);
+		},
+		[todos],
+	);
+
+	return (
+		<TodoTemplate>
+			<TodoInsert onInsert={onInsert} />
+			<TodoList todos={todos} onRemove={onRemove} onToggle={onToggle} />
+		</TodoTemplate>
+	);
+};
+
+export default App;
+```
+
+- 위 코드에서는 배열 내장 함수 map을 사용하여 특정 id를 가지고 있는 객체의 checked 값을 반전 시켜 주었습니다. 불변성을 유지하면서 특정 배열 원소를 업데이트해야 할 때 map을 사용하면 짧은 코드로 쉽게 작성할 수 있습니다.
+- onToggle 함수를 보면 todo.id === id ? ... :  ... 이라는 삼항 연산자가 사용되었습니다. 
+- todo.id와 현재 파라미터로 사용된 id 값이 같을 때는 정해 준 규칙대로 새로운 객체를 생성하지만, id 값이 다를 때는 변화를 주지 않고 처음 받아 왔던 상태 그대로 반환합니다. 그렇기 때문에 map을 사용하여 만든 배열에서 변화가 필요한 원소만 업데이트되고 나머지는 그래로 남아 있게 됩니다.
+
+#### TodoListItem에서 토글 함수 호출하기
+
+#### TodoList.js
+
+```javascript
+import TodoListItem from './TodoListItem';
+import './TodoList.scss';
+
+const TodoList = ({ todos, onRemove, onToggle }) => {
+	return (
+		<div className="TodoList">
+			{todos.map(todo => (
+				<TodoListItem 
+					todo={todo}
+					key={todo.id}
+					onRemove={onRemove}
+					onToggle={onToggle}
+				/>
+			))}
+		</div>
+	);
+};
+
+export default TodoList;
+```
+
+#### TodoListItem.js 
+
+```javascript
+import {
+	MdCheckBoxOutlineBlank,
+	MdCheckBox,
+	MdRemoveCircleOutline,
+} from 'react-icons/md';
+
+import cn from 'classnames';
+import './TodoListItem.scss';
+
+const TodoListItem = ({ todo, onRemove, onToggle }) => {
+	const { id, text, checked } = todo;
+
+	return (
+		<div className="TodoListItem">
+			<div className={cn('checkbox', { checked })} onClick={() => onToggle(id)}>
+				{checked ? <MdCheckBox /> : <MdCheckBoxOutlineBlank />}
+				<div className="text">{text}
+			</div>
+			<div className="remove" onClick={() => onRemove(id)}>
+				<MdRemoveCircleOutline />
+			</div>
+		</div>
+	);
+};
+
+export default TodoListItem;
+```

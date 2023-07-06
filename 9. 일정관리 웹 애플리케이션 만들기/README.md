@@ -344,3 +344,244 @@ export default App;
 	}
 }
 ```
+
+## 기능 구현하기
+
+### App에서 todos 상태 사용하기
+
+#### App.js
+
+```javascript
+import { useState } from 'react';
+import TodoTemplate from './components/TodoTemplate';
+import TodoInsert from './components/TodoInsert';
+import TodoList from './components/TodoList';
+
+const App = () => {
+	const [todos, setTodos] = useState([
+		{
+			id: 1,
+			text: '리액트의 기초 알아보기',
+			checked: true,
+		},
+		{
+			id: 2,
+			text: '컴포넌트 스타일링해 보기',
+			checked: true,
+		},
+		{
+			id: 3,
+			text: '일정 관리 앱 만들어 보기',
+			checked: false,
+		}
+	]);
+
+	return (
+		<TodoTemplate>
+			<TodoInsert />
+			<TodoList todos={todos} />
+		</TodoTemplate>
+	);
+};
+
+export default App;
+```
+
+- todos 배열 안에 들어 있는 객체에는 각 항목의 고유 id, 내용, 완료 여부를 알여주는 값이 포함되어 있습니다.
+- 이 배열은 TodoList에 props로 전달되고, TodoList에서 이 값을 받아 온 후 TodoItem으로 변환하여 설정합니다.
+
+#### TodoList.js
+
+```javascript
+import {
+	MdCheckBoxOutlineBlank,
+	MdCheckBox,
+	MdRemoveCircleOutline
+} from 'react-icons/md';
+import cn from 'classnames';
+import './TodoListItem.scss';
+
+const TodoListItem = ({ todo }) => {
+	const { text, checked } = todo;
+
+	return (
+		<div className="TodoListItem">
+			<div className={cn('checkbox', { checked })}>
+				{checked ? <MdCheckBox /> : <MdCheckBoxOutlineBlank />}
+				<div className="text">{text}</div>
+			</div>
+			<div className="remove">
+				<MdRemoveCircleOutline />
+			</div>
+		</div>
+	);
+};
+
+export default TodoListItem;
+```
+
+### 항목 추가 기능 구현하기
+
+#### TodoInsert value 상태 관리하기
+
+- 인풋에 입력하는 값을 관리할 수 있도록 useState를 사용하여 value라는 상태를 정의
+- 추가로 인풋에 넣어줄 onChange 함수도 작성, 이 과정에서 컴포넌트가 리렌더링될 때마다 함수를 새로 만드는 것이 아니라, 한 번 함수를 만들고 재사용할 수 있도록 useCallback Hook을 사용
+
+#### TodoInsert.js
+
+```javascript
+import { useState, useCallback } from 'react';
+import { MdAdd } from 'react-icons/md';
+import './TodoInsert.scss';
+
+const TodoInsert = () => {
+	const [value, setValue] = useState('');
+
+	const onChange = useCallback(e => {
+		setValue(e.target.value);
+	}, []);
+
+	return (
+		<form className="TodoInsert">
+			<input 
+				placeholder="할 일을 입력하세요."
+				value={value}
+				onChange={onChange}
+			/>
+			<button type="submit">
+				<MdAdd />
+			</button>
+		</form>
+	);
+};
+
+export default TodoInsert;
+```
+
+#### todo 배열에 새 객체 추가하기
+
+
+- todos 배열에 새 객체를 추가하는 onInsert 함수를 만듭니다. 
+- 이 함수에서는 새로운 객체를 만들 때마다 id 값에 1씩 더해 주어야 하는데, id값은 useRef를 사용하여 관리합니다. 
+- 여기서 useState가 아닌 useRef를 사용하여 컴포넌트에서 사용할 변수를 만드는 이유는 id 값은 렌더링되는 정보가 아니기 때문입니다. 이 값은 화면에 보이지도 않고, 이 값이 바뀐다고 해서 컴포넌트가 리렌더링될 필요도 없습니다. 
+- 단순히 새로운 항목을 만들 때 참조되는 값입니다.
+- onInsert 함수는 컴포넌트의 성능을 아낄 수 있도록 useCallback으로 감싸 줍니다.
+- onInsert 함수를 만든 뒤에는 해당 함수를 TodoInsert 컴포넌트의 props로 설정
+
+#### App.js 
+
+```javascript
+import { useState, useRef, useCallback } from 'react';
+import TodoTemplate from './components/TodoTemplate';
+import TodoInsert from './components/TodoInsert';
+import TodoList from './components/TodoList';
+
+const App = () => {
+	const [todos, setTodos] = useState([
+		{
+			id: 1,
+			text: '리액트의 기초 알아보기',
+			checked: true,
+		},
+		{
+			id: 2,
+			text: '컴포넌트 스타일링해 보기',
+			checked: true,
+		},
+		{
+			id: 3,
+			text: '일정 관리 앱 만들어 보기',
+			checked: false,
+		}
+	]);
+
+	// 고유값으로 사용될 id
+	// ref를 사용하여 변수 담기
+	const nextId = useRef(4);
+
+	const onInsert = useCallback(
+		text => {
+			const todo = {
+				id: nextId.current,
+				text,
+				checked: false,
+			};
+			setTodos(todos.concat(todo));
+			nextId.current += 1; // nextId 1씩 더하기
+		},
+		[todos],
+	);
+
+	return (
+		<TodoTemplate>
+			<TodoInsert onInsert={onInsert} />
+			<TodoList todos={todos} />
+		</TodoTemplate>
+	);
+};
+
+export default App;
+```
+
+#### TodoInsert에서 onSubmit 이벤트 설정하기
+
+#### TodoInsert.js
+
+```javascript
+import { useState, useCallback } from 'react';
+import { MdAdd } from 'react-icons/md';
+import './TodoInsert.scss';
+
+const TodoInsert = ({ onInsert }) => {
+	const [value, setValue] = useState('');
+
+	const onChange = useCallback(e => {
+		setValue(e.target.value);
+	}, []);
+
+	const onSubmit = useCallback(
+		e => {
+			onInsert(value);
+			setValue(''); 
+
+			// submit 이벤트는 브라우저에서 새로고침을 발생시킵니다.
+			// 이를 방지하기 위해 이 함수를 호출합니다.
+			e.preventDefault();
+		},
+		[onInsert, value],
+	);
+
+	return (
+		<form className="TodoInsert" onSubmit={onSubmit}>
+			<input 
+				placeholder="할 일을 입력하세요."
+				value={value}
+				onChange={onChange}
+			/>
+			<button type="submit">
+				<MdAdd />
+			</button>
+		</form>
+	);
+};
+
+export default TodoInsert;
+```
+
+### 지우기 기능 구현하기
+
+- 리액트 컴포넌트에서 배열의 불변성을 지키면서 배열 원소를 제거해야 할 경우, 배열 내장 함수인 filter를 사용하면 매우 간편합니다.
+
+#### 배열의 내장 함수 filter
+
+- filter 함수는 기존 배열을 그대로 둔 상태에서 특정 조건을 만족하는 원소들만 따로 추출하여 새로운 배열을 만들어 줍니다.
+
+```javascript
+const array = [1,2,3,4,5,6,7,8,9,10];
+const biggerThanFive = array.filter(number => number > 5);
+```
+
+- filter 함수에는 조건을 확인해 주는 함수를 파라미터로 넣어 주어야 합니다. 파라미터로 넣는 함수는 true 혹은 false 값을 반환해야 하며, 기서 true를 반환하는 경우만 새로운 배열에 포함됩니다.
+
+
+#### todos 배열에서 id로 항목 지우기

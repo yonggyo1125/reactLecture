@@ -161,3 +161,82 @@ export default App;
 ```
 
 > setTodos를 사용할 때 그 안에 todos => 만 앞에 넣어주면 됩니다.
+
+### useReducer 사용하기
+
+- useState의 함수형 업데이트를 사용하는 대신 useReducer를 사용해도 onToggle, onRemove가 계속 새로워지는 문제를 해결할 수 있습니다.
+
+#### App.js
+
+```javascript
+import { useReducer, useRef, useCallback } from 'react';
+import TodoTemplate from './components/TodoTemplate';
+import TodoInsert from './components/TodoInsert';
+import TodoList from './components/TodoList';
+
+function createBulkTodos() {
+    const array = [];
+    for (let i = 1; i <= 2500; i++) {
+        array.push({
+            id: i,
+            text: `할 일 ${i}`,
+            checked: false,
+        });
+    }
+    return array;
+}
+
+function todoReducer(todos, action) {
+    switch (action.type) {
+        case 'INSERT': // 새로 추가
+            return todos.concat(action.todo);
+        case 'REMOVE': // 제거
+            return todos.filter(todo => todo.id !== action.id);
+        case 'TOGGLE': // 토글
+            return todos.map(topdo => todo.id === action.id ? { ...todo, checked: !todo.checked } : todo);
+        default:
+            return todos;
+    }
+}
+
+const App = () => {
+    const [todos, dispatch] = useReduer(todoReducer, undefined, createBulkTodos);
+
+    // 고유값으로 사용될 id
+    // ref를 사용하여 변수 담기
+    const nextId = useRef(2501);
+
+    const onInsert = useCallback(text => {
+        const todo = {
+            id: nextId.current,
+            text,
+            checked: false,
+        };
+        dispatch({ type: 'INSERT', todo });
+        nextId.current += 1; // nextId 1씩 더하기
+    }, []);
+
+    const onRemove = useCallback(id => {
+        dispatch({ type: 'REMOVE', id });
+    }, []);
+
+    const onToggle = useCallback(id => {
+        dispatch({ type: 'TOGGLE', id });
+    }, []);
+
+    return (
+        <TodoTemplate>
+            <TodoInsert onInsert={onInsert} />
+            <TodoList todos={todos} onRemove={onRemove} onToggle={onToggle} />
+        </TodoTemplate>
+    );
+}
+
+export default App;
+```
+
+- useReducer를 사용할 때는 원래 두 번째 파라미터에 초기 상태를 넣어 주어야 합니다.
+- 지금은 그 대신 두 번쨰 파라미터에 undefined를 넣고, 세 번째 파라미터에 초기 상태를 만들어 주는 함수인 createBulkTodos를 넣어 주었는데, 이렇게 하면 컴포넌트가 맨 처름 렌더링될 때만 createBulkTodos 함수가 호출됩니다.
+- useReducer를 사용하는 방법은 상태를 업데이트 하는 로직을 모아서 컴포넌트 바깥에 둘 수 있다는 장점이 있습니다.
+
+## 불변성의 중요성

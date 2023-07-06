@@ -46,4 +46,118 @@ export default App;
     - 자신의 state가 바뀔 때
     - 부모 컴포넌트가 리렌더링될 때
     - forceUpdate 함수가 실행될 때
+- '할 일 1' 항목을 체크할 경우 App 컴포넌트의 state가 변경되면서 App 컴포넌트가 리렌더링 됩니다. 부모 컴포넌트가 리렌더링되었으니 TodoList 컴포넌트가 리렌더링되고 그 안의 무수한 컴포넌트들도 리렌더링 됩니다.
+- '할 일 1' 항목은 리렌더링되어야 하는 것이 맞지만, '할 일 2'부터 '할 일 2500'까지는 리렌더링을 안 해도 되는 상황인데 모두 리렌더링되고 있으므로 이렇게 느린 것입니다. 컴포넌트의 개수가 많지 않다면 모든 컴포넌트를 리렌더링해도 느려지지 않는데, 지금처럼 약 2,000개가 넘어가면 성능이 저하됩니다.
 
+## React.memo를 사용하여 컴포넌트 성능 최적화
+
+- 컴포넌트의 리렌더링을 방지할 때는 shouldComponentUpdate라는 라이프사이클을 사용하면 됩니다. 
+- 그러나 함수 컴포넌트에서는 라이프사이클 메서드를 사용할 수 없습니다.
+- 그 대신 React.memo라는 함수를 사용합니다. 컴포넌트의 props가 바뀌지 않았다면, 리렌더링하지 않도록 설정하여 함수 컴포넌트의 리렌더링 성능을 최적화해 줄 수 있습니다.
+
+#### TodoListItem.js 
+
+```javascript
+import React from 'react';
+import {
+    MdCheckBoxOutlineBlank,
+    MdCheckBox,
+    MdRemoveCircleOutline,
+} from 'react-icons/md';
+import cn from 'classnames';
+import './TodoListItem.scss';
+
+const TodoListItem = ({ todo, onRemove, onToggle }) => {
+    ...
+};
+
+export default React.memo(TodoListItem);
+```
+
+> 이제 TodoListItem 컴포넌트는 todo, onRemove, onToggle이 바뀌지 않으면 리렌더링을 하지 않습니다.
+
+## onToggle, onRemove 함수가 바뀌지 않게 하기
+
+- React.memo를 사용하는 것만으로 컴포넌트 최적화가 끝나지는 않습니다. 현재 프로젝트에서는 todos 배열이 업데이트되면 onRemove와 onToggle 함수도 새롭게 바뀝니다. 
+- onRemove와 onToggle 함수는 배열 상태를 업데이트하는 과정에서 최신 상태의 todos를 참조하기 때문에 todos 배열이 바뀔 때마다 함수가 새로 만들어집니다. 
+- 함수가 계속 만들어지는 상황을 방지하는 방법은 두 가지 입니다.
+    - useState의 함수형 업데이트 기능을 사용하는 것 
+    - useReducer를 사용하는 것
+
+### useState의 함수형 업데이트
+
+- 기존 setTodos 함수를 사용할 때는 새로운 상태를 파라미터로 넣어 주었습니다.
+- setTodos를 사용할 때 새로운 상태를 파라미터로 넣는 대신, 상태 업데이트를 어떻게 할지 정해주는 업데이트 함수를 넣어줄 수도 있습니다. 이를 함수형 업데이트라고 합니다.
+
+```javascript
+const [number, setNumber] = useState(0);
+// prevNumber는 현재 number 값을 가리킵니다.
+const onIncrease = useCallback(
+    () => setNumber(prevNumber => prevNumber + 1),
+);
+```
+
+- setNumber(number+1)을 하는 것이 아니라, 어떻게 업데이트할지 정의해 주는 업데이트 함수를 넣어줍니다.
+- 그러면 useCallback을 사용할 때 두 번째 파라미터로 넣는 배열에 number를 넣지 않아도 됩니다.
+
+#### App.js
+
+```javascript
+import { useRef, useState, useCallback } from 'react';
+import TodoTemplate from './components/TodoTemplate';
+import TodoInsert from './components/TodoInsert';
+import TodoList from './components/TodoList'; 
+
+function createBulkTodos() {
+    const array = [];
+    for (let i = 1; i <= 2500; i++) {
+        array.push({
+            id: i,
+            text: `할 일 ${i}`,
+            checked: false,
+        });
+    }
+    return array;
+}
+
+const App = () => {
+    const [todos, setTodos] = useState(createBulkTodos);
+
+    // 고유값으로 사용될 id
+    // ref를 사용하여 변수 담기
+    const nextId = useRef(4);
+
+    const onInsert = useCallback(text => {
+        const todo = {
+            id: nextId.current,
+            text,
+            checked: false,
+        };
+         setTodos(todos => todos.concat(todo));
+         nextId.current += 1; // nextId 1씩 더라기
+    }, []);
+
+    const onRemove = useCallback(id => {
+        setTodos(todos => todos.filter(todo => todo.id !== id));
+    }, []);
+
+    const onToggle = useCallback(id => {
+        setTodos(todos => 
+            todos.map(todo => 
+                todo.id === id ? { ...todo, checked: !todo.checked } : todo
+            )
+        );
+    }, []);
+
+    return (
+        <TodoTemplate>
+            <TodoInsert onInsert={onInsert} />
+            <TodoList todos={todos} onRemove={onRemove} onToggle={onToggle} />
+        </TodoTemplate>
+    );
+};
+
+export default App;
+```
+
+> setTodos를 사용할 때 그 안에 todos => 만 앞에 넣어주면 됩니다.

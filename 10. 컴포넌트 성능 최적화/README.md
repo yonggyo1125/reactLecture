@@ -240,3 +240,45 @@ export default App;
 - useReducer를 사용하는 방법은 상태를 업데이트 하는 로직을 모아서 컴포넌트 바깥에 둘 수 있다는 장점이 있습니다.
 
 ## 불변성의 중요성
+
+```javascript
+const onToggle = useCallback(id => {
+    setTodos(todos => 
+        todos.map(todo => todo.id === id ? { ...todo, checked: !todo.checked } : todo)
+    );
+}, []);
+```
+
+- 기존 데이터를 수정할 때 직접 수정하지 않고, 새로운 배열을 만든 다음에 새로운 객체를 만들어서 필요한 부분을 교체해 주는 방식으로 구현되었습니다.
+- 업데이트가 필요한 곳에서는 아예 새로운 배열 혹은 새로운 객체를 만들기 때문에, React.memo를 사용했을 때 props가 바뀌었는지 혹은 바뀌지 않았는지를 알아내서 리렌더링 성능을 최적화해 줄 수 있습니다.
+- 이렇게 기존의 값을 직접 수정하지 않으면서 새로운 값을 만들어 내는 것을 **불변성을 지킨다**고 합니다.
+
+```javascript
+const array = [1,2,3,4,5];
+
+const nextArrayBad = array;  // 배열을 복사는 것이 아니라 똑같은 배열을 가리킵니다.
+nextArrayBad[0] = 100;
+console.log(array === nextArrayBad); // 완전히 같은 배열이기 때문에 true
+
+const nextArrayGood = [...array]; // 배열 내부의 값을 모두 복사합니다.
+nextArrayGood[0] = 100;
+console.log(array === nextArrayGood); // 다른 배열이기 때문에 false
+
+const object = {
+    foo: 'bar',
+    value: 1
+};
+
+const nextObjectBad = object; // 객체가 복사되지 않고, 똑같은 객체를 가리킵니다.
+nextObjectBad.value = nextObjectBad.value + 1;
+console.log(object === nextObjectBad); // 같은 객체이기 때문에 true
+
+const nextObjectGood = {
+    ...object, // 기존에 있던 내용을 모두 복사해서 넣습니다.
+    value: object.value + 1 // 새로운 값을 덮어 씁니다.
+};
+console.loog(object === nextObjectGood); // 다른 객체이기 때문에 false
+```
+
+- 불변성이 지켜지지 않으면 객체 내부의 값이 새로워져도 바뀐 것을 감지하지 못합니다. 그러면 React.memo에서 서로 비교하여 최적화하는 것이 불가능합니다.
+- 전개 연산자(... 문법)을 사용하여 객체나 배열 내부의 값을 복사할 때는 얕은 복사

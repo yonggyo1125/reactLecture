@@ -281,4 +281,139 @@ console.loog(object === nextObjectGood); // 다른 객체이기 때문에 false
 ```
 
 - 불변성이 지켜지지 않으면 객체 내부의 값이 새로워져도 바뀐 것을 감지하지 못합니다. 그러면 React.memo에서 서로 비교하여 최적화하는 것이 불가능합니다.
-- 전개 연산자(... 문법)을 사용하여 객체나 배열 내부의 값을 복사할 때는 얕은 복사
+- 전개 연산자(... 문법)을 사용하여 객체나 배열 내부의 값을 복사할 때는 얕은 복사(shallow copy)를 하게 됩니다. 즉, 내부의 값이 완전히 새로 복사되는 것이 아니라 가장 바깥쪽에 있는 값만 복사됩니다.
+- 따라서 내부의 값이 객체 혹은 배열이라면 내부의 값 또한 따로 복사해 주어야 합니다. 
+- 배열 혹은 객체의 구조가 매우 복잡해진다면 이렇게 불변성을 유지하면서 업데이트하는 것도 까다로워집니다. 이렇게 복잡한 상황인 경우 immer라는 라이브러리의 도움을 받으면 정말 편하게 작업할 수 있습니다.
+
+## TodoList 컴포넌트 최적화하기
+
+- 리스트에 관련한 컴포넌트를 최적화할 떄는 리스트 내부에서 사용하는 컴포넌트도 최적화해야 하고, 리스트에 사용되는 컴포넌트 자체도 최적화해 주는 것이 좋습니다.
+
+#### TodoList.js
+
+```javascript
+import React from 'react';
+import TodoListItem from './TodoListItem';
+import './TodoList.scss';
+
+const TodoList = ({ todos, onRemove, onToggle }) => {
+	return (...);
+};
+
+export default React.memo(TodoList);
+```
+
+## react-virtualized를 사용한 렌더링 최적화
+
+- 현재 컴포넌트가 맨 처음 렌더링될 때 2,500개 컴포넌트 중 2,491개 컨포넌트는 스크롤하기 전에는 보이지 않음에도 불구하고 렌더링이 이루어집니다. 그리고 나중에 todos 배열에 변동이 생길 때도 TodoList 컴포넌트 내부의 map 함수에서 배열의 처음부터 끝까지 컴포넌트로 변환해 주는데, 이 중에서 2,491개는 보이지 않으므로 시스템 자원 낭비입니다.
+
+- react-virtualized를 사용하면 리스트 컴포넌트에서 스크롤되기 전에 보이지 않는 컴포넌트는 렌더링하지 않고 크기만 차지하게끔 할 수 있습니다. 만약 스크롤되면 해당 스크롤 위치에서 보여 주어야 할 컴포넌트를 자연스럽게 렌더링 시킵니다.
+
+### 최적화 준비
+
+```
+$ yarn add react-virtualized
+```
+
+### TodoList 수정 
+
+#### TodoList.js
+
+```javascript
+import React, { useCallback } from 'react';
+import { List } from 'react-virtualized';
+import TodoListItem from './TodoListItem';
+import './TodoList.scss';
+
+const TodoList = ({ todos, onRemove, onToggle }) => {
+	const rowRenderer = useCallback(
+		({ index, key, style }) => {
+			const todo = todos[index];
+			return (
+				<TodoListItem
+					todo={todo}
+					key={key}
+					onRemove={onRemove}
+					onToggle={onToggle}
+					style={style}
+				/>
+			);
+		},
+		[onRemove, onToggle, todos]
+	);
+	
+	return (
+		<List 
+			className="TodoList"
+			width={512} // 전체 크기
+			height={513} // 전체 높이
+			rowCount={todos.length} // 항목 개수
+			rowHeight={57} // 항목 높이
+			rowRenderer={rowRenderer} // 항목을 렌더링할 때 쓰는 함수 
+			list={todos} // 배열
+			style={{ outline: 'none' }} // List에 기본 적용되는 outline 스타일 제거
+		/>
+	);
+};
+
+export default React.memo(TodoList);
+```
+
+- List 컴포넌트를 사용하기 위해 rowRenderer라는 함수를 새로 작성해 주었습니다. 이 함수는 react-virtualized의 List 컴포넌트에서 각 TodoItem을 렌더링할 때 사용하며, 이 함수를 List 컴포넌트의 props로 설정해 주어야 합니다. 이 함수는 파라미터에 index, key, style 같은 객체 타입으로 받아 와서 사용합니다.
+
+- List 컴포넌트를 사용할 때는 해당 리스트의 전체 크기와 각 항목의 높이, 각 항목을 렌더링할 때 사용해야 하는 함수, 그리고 배열을 props로 넣어 주어야 합니다. 그러면 이 컴포넌트가 전달받은 props를 사용하여 자동으로 최적화해 줍니다.  
+
+
+### TodoListItem 수정
+
+#### TodoListItem.js - render
+
+```javascript
+import React from 'react';
+import {
+	MdCheckBoxOutlineBlank,
+	MdCheckBox,
+	MdRemoveCircleOutline,
+} from 'react-icons/md';
+import cn from 'classnames';
+import './TodoListItem.scss';
+
+const TodoListItem = ({ todo, onRemove, onToggle, style }) => {
+	const { id, text, checked } = todo;
+	
+	return (
+		<div classNames="TodoListItem-virtualized" style={style}>
+			<div className="TodoListItem">
+				<div 
+					className={cn('checkbox', { checked })}
+					onClick={() => onToggle(id)}
+				>
+					{ checked ? <MdCheckBox /> : <MdCheckBoxOutlineBlank /> }
+					<div className="text">{text}</div>
+				</div>
+				<div className="remove" onClick={() => onRemove(id)}>
+					<MdRemoveCircleOutline />
+				</div>
+			</div>
+		</div>
+	);
+};
+
+export default React.memo(TodoListItem); 
+```
+
+#### TodoListItem.scss
+
+```scss 
+.TodoListItem-virtualized {
+	& + & {
+		border-top: 1px solid #dee2e6;
+	}
+	&:nth-child(even) {
+		background: #f8f9fa;
+	}
+}
+
+... 
+
+```

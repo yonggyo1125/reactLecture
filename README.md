@@ -66,3 +66,7 @@
 - onToggle, onRemove 함수가 바뀌지 않게 하기
 - 불변성의 중요성
 - react-virtualized를 사용한 렌더링 최적화
+
+## immer를 사용하여 더 쉽게 불변성 유지하기
+
+- immer를 설치하고 사용법 알아보기

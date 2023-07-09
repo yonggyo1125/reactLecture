@@ -298,3 +298,117 @@ export default About;
 - 쿼리스트링 값이 <code>?detail=true&mode=1</code>으로 표시가 되고 있습니다. 이 문자열에서 앞에 있는 ?로 지우고 & 문자열로 분리한 뒤 key와 value 를 파싱하는 작업을 해야 하는데 보통 npm에서 qs 또는 querystring 패키지를 설치해서 처리할 수 있습니다. 
 
 - 쿼리스트링을 따로 파싱까지 해야된다면 번거로울 수도 있는데 리액트 라우터에서는 useSearchParams라는 Hook을 통해서 쿼리스트링을 더욱 쉽게 다룰 수 있게 됩니다.
+
+#### src/pages/About.js
+
+```javascript
+import { useSearchParams } from 'react-router-dom';
+
+const About = () => {
+	const [searchParams, setSearchParams] = useSearchParams();
+	const detail = searchParams.get('detail');
+	const mode = searchParams.get('mode');
+
+	const onToggleDetail = () => {
+		setSearchParams({ mode, detail: detail === 'true' ? false : true });
+	};
+
+	const onIncreaseMode = () => {
+		const nextMode = mode === null ? 1 : parseInt(mode) + 1;
+		setSearchParams({ mode: nextMode, detail });
+	};
+
+	return (
+		<div>
+			<h1>소개</h1>
+			<p>리액트 라우터를 사용해 보는 프로젝트입니다.</p>
+			<p>detail: {detail}</p>
+			<p>mode: {mode}</p>
+			<button onClick={onToggleDetail}>Toggle detail</button>
+			<button onClick={onIncreaseMode}>mode + 1</button>
+		</div>
+	);
+};
+
+export default About;
+```
+
+- useSearchParams는 배열 타입의 값을 반환하며, 첫번째 원소는 쿼리파라미터를 조회하거나 수정하는 메서드들이 담긴 객체를 반환합니다.
+- get 메서드를 통해 특정 쿼리파라미터를 조회할 수 있고, set 메서드를 통해 특정 쿼리파라미터를 업데이트 할 수 있습니다. 죄회시에 쿼리파라미터가 존재하지 않는다면 null로 조회됩니다. 
+- 두번째 요소는 쿼리파라미터를 객체형태로 업데이트할 수 있는 함수를 반환합니다.
+
+> 쿼리파라미터를 사용할 때 유의점은 쿼리파라미터를 조회할 때 값은 무조건 문자열 타입입라는 것. true 또는 false 값을 넣게 된다면 값을 비교할 때 꼭 'true'와 같이 따옴표로 감싸서 비교를 해야 하며, 숫자를 다룰때는 parseInt를 사용하여 숫자 타입으로 변환해야 한다.
+
+## 중첩된 라우트
+
+#### src/pages/Articles.js
+
+```javascript
+import { Link } from 'react-router-dom';
+
+const Articles = () => {
+	return (
+		<ul>
+			<li>
+				<Link to="/articles/1">게시글 1</Link>
+			</li>
+			<li>
+				<Link to="/articles/2">게시글 2</Link>
+			</li>
+			<li>
+				<Link to="/articles/3">게시글 3</Link>
+			</li>
+		</ul>
+	);
+};
+
+export default Articles;
+```
+
+#### src/pages/Article.js
+
+```javascript
+import { useParams } from 'react-router-dom';
+
+const Article = () => {
+	const { id } = useParams();
+	return (
+		<div>
+			<h2>게시글 {id}</h2>
+		</div>
+	);
+};
+
+export default Article;
+```
+
+#### src/App.js
+
+```javascript
+import { Route, Routes } from 'react-router-dom';
+import About from './pages/About';
+import Article from './pages/Article';
+import Articles from './pages/Articles';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+
+const App = () => {
+	return (
+		<Routes>
+			<Route Path="/" element={<Home />} />
+			<Route path="/about" element={<About />}>
+			<Route path="/profiles/:username" element={<Profile />} />
+			<Route path="/articles" element={<Articles />} />
+			<Route path="/articles/:id" element={<Article />} />
+		</Routes>
+	);
+};
+
+export default App;
+```
+
+#### src/pages/Home.js
+
+```javascript
+
+```

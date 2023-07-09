@@ -410,5 +410,26 @@ export default App;
 #### src/pages/Home.js
 
 ```javascript
+import { Link } from 'react-router-dom';
 
+const Home = () => {
+	return (
+		<div>
+			<h1>홈</h1>
+			<p>가장 먼저 보여지는 페이지입니다.</p>
+			<li>
+				<Link to="/about">소개</Link>
+			</li>
+			<li>
+				<Link to="/profiles/lee">개발자1의 프로필</Link>
+			</li>
+			<li>
+				<Link to="/profiles/kim">개발자2의 프로필<Link>
+			</li>
+			
+		</div>
+	);
+};
+
+export default Home;
 ```

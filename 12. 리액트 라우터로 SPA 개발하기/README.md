@@ -426,10 +426,102 @@ const Home = () => {
 			<li>
 				<Link to="/profiles/kim">개발자2의 프로필<Link>
 			</li>
-			
+			<li>	
+				<Link to="/profiles/void">존재하지 않는 프로필</Link>
+			</li>
+			<li>
+				<Link to="/articles">게시글 목록</Link>
+			</li>
 		</div>
 	);
 };
 
 export default Home;
 ```
+#### src/App.js
+
+- 중첩된 라우터 형태로 설정 
+
+```javascript
+import { Route, Routes } from 'react-router-dom';
+import About from './pages/About';
+import Article from './pages/Article';
+import Articles from './pages/Articles';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+
+const App = () => {
+	return (
+		<Routes>
+			<Route path="/" element={<Home />} />
+			<Route path="/about" element={<About />} />
+			<Route path="/profiles/:username" element={<Profile />} />
+			<Route path="/articles" element={<Articles />}>
+				<Route path=":id" element={<Article />} />
+			</Route>
+		</Routes>
+	);
+};
+
+export default App;
+```
+
+- <code>Articles</code> 컴포넌트에서 리액트 라우터에서 제공하는 <code>Outlet</code> 이라는 컴포넌트를 사용해주어야 합니다.
+- 이 컴포넌트는 <code>Route</code>의 <code>children</code>으로 들어가는 JSX 요소를 보여주는 역할을 합니다.
+
+#### src/pages/Articles.js 
+
+```javascript
+import { Link, Outlet } from 'react-router-dom';
+
+const Articles = () => {
+	return (
+		<div>
+			<Outlet />
+			<ul>
+				<li>
+					<Link to="/articles/1">게시글 1</Link>
+				</li>
+				<li>
+					<Link to="/articles/2">게시글 2</Link>
+				</li>
+				<li>
+					<Link to="/articles/3">게시글 3</Link>
+				</li>
+			</ul>
+		</div>
+	);
+};
+
+export default Articles;
+```
+
+> 위 코드에서 <code>Outlet</code> 컴포넌트가 사용된 자리에 중첩된 라우트가 보여지게 됩니다.
+
+## 공통 레이아웃 컴포넌트 
+
+> 중첩된 라우트와 <code>Outlet</code>은 페이지끼리 공통적으로 보여줘야 하는 레이아웃이 있을때도 사용할  수 있습니다.
+
+
+#### src/Layout.js
+
+```javascript
+import { Outlet } from 'react-router-dom';
+
+const Layout = () => {
+	return (
+		<div>
+			<header style={{ background: 'lightgray', padding: 16, fontSize: 24 }}>
+				Header
+			</header>
+			<main>
+				<Outlet />
+			</main>
+		</div>
+	);
+};
+
+export default Layout;
+```
+
+#### src/App.js

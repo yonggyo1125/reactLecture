@@ -14,7 +14,7 @@
 - 리액트의 이벤트 시스템
 - 이벤트 핸들링 익히기
 - 함수 컴포넌트로 구현하기 
-- [동영상강의](https://drive.google.com/drive/folders/12jmCwioorQrunehjwDCmN0HmqRCAGMha?usp=drive_link)
+- [동영상강의](https://drive.google.com/drive/folders/1lNTQGpCky0dvrHnfr7qaxcX7x611qYNK?usp=drive_link)
 
 ## ref: DOM에 이름 달기
 

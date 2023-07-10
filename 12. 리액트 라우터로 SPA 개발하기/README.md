@@ -525,3 +525,352 @@ export default Layout;
 ```
 
 #### src/App.js
+
+```javascript
+import { Route, Routes } from 'react-router-dom';
+import Layout from './Layout';
+import About from './pages/About';
+import Article from './pages/Article';
+import Articles from './pages/Articles';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+
+const App = () => {
+	return (
+		<Routes>
+			<Route element={<Layout />}>
+				<Route path="/" element={<Home />} />
+				<Route path="/about" element={<About />} />
+				<Route path="/profiles/:username" element={<Profile />} />
+			</Route>
+			<Route path="/articles" element={<Articles />}>
+				<Route path=":id" element={<Article />} />
+			</Route>
+		</Routes>
+	);
+};
+
+export default App;
+```
+
+### index props
+
+- <code>Route</code> 컴포넌트에는 <code>index</code>라는 props가 있습니다. 이 props는 <code>path="/"</code>와 동일한 의미를 가집니다.
+- <code>Home</code> 컴포넌트가 사용된 <code>Route</code> 컴포넌트를 다음과 같이 변경합니다.
+
+#### src/App.js
+
+```javascript
+import { Route, Routes } from 'react-router-dom';
+import Layout from './Layout';
+import About from './pages/About';
+import Article from './pages/Article';
+import Home from './pages/Home';
+import Profile from './pages/Profile';
+
+const App = () => {
+	return (
+		<Routes>
+			<Route path="/" element={<Layout />}>
+				<Route index element={<Home />} />
+				<Route path="/about" element={<About />} />
+				<Route path="/profiles/:username" element={<Profile />} />
+			</Route>
+			<Route path="/articles" element={<Articles />}>
+				<Route path=":id" element={<Article />} />
+			</Route>
+		</Routes>
+	);
+};
+
+export default App;
+```
+
+> index props는 상위 라우트의 경로와 일치하지만, 그 이후에 경로가 주어지지 않았을 때 보여지는 라우트를 설정할때 사용합니다. <code>path="/"</code>와 동일한 역할을 하며 이를 좀 더 명시적으로 표현하는 방법입니다.
+
+## 리액트 라우터 부가기능 
+
+### useNavigate
+
+- <code>useNavigate</code>는 <code>Link</code> 컴포넌트를 사용하지 않고 다른 페이지로 이동을 해야 하는 상황에 사용하는 Hook 입니다.
+
+#### src/Layout.js
+
+```javascript
+import { Outlet, useNavigate } from 'react-router-dom';
+
+const Layout = () => {
+	const navigate = useNavigate();
+	
+	const goBack = () => {
+		// 이전 페이지로 이동
+		navigate(-1);
+	};
+	
+	const goArticles = () => {
+		// articles 경로로 이동
+		navigate('/articles');
+	};
+	
+	return (
+		<div>
+			<header style={{ background: 'lightgray', padding: 16, fontSize: 24 }}>
+				<button onClick={goBack}>뒤로가기</button>
+				<button onClick={goArticles}>게시글 목록</button>
+			</header>
+			<main>
+				<Outlet />
+			</main>
+		</div>
+	);
+};
+
+export default Layout;
+```
+  
+- <code>navigate</code> 함수를 사용할 때 파라미터가 숫자 타입이라면 앞으로 또는 뒤로 이동합니다. 
+	- <code>navigate(-1)</code> : 뒤로 한번 이동
+	- <code>navigate(1)</code> : 앞으로 한번 이동(뒤로가 한번 한 후 동작)
+- 다른 페이지로 이동을 할 때 <code>replace</code> 옵션을 사용하면 페이지 이동 기록이 남지 않습니다.
+
+#### src/Layout.js - goArticles
+
+```javascript
+const goArticles = () => {
+	navigate('/articles', { replace: true });
+};
+```
+
+### NavLink
+
+- <code>NavLink</code> 컴포넌트는 링크에서 사용하는 경로가 현재 라우트 경로와 일치하는 경우 특정 스타일 또는 CSS 클래스를 적용하는 컴포넌트입니다.
+- 이 컴포넌트를 사용할 때 <code>style</code> 또는 <code>className</code>을 설정할 때 <code>{ isActive: boolean }</code>을 파라미터로 전달받는 함수 타입의 값을 전달합니다. 
+
+```javascript
+<NavLink 
+	style={({isActive}) => isActive ? activeStyle : undefined }
+/>
+```
+
+```javascript
+<NavLink 
+	className={({isActive}) => isActive ? 'active' : undefined }
+/>
+```
+
+#### src/pages/Articles.js
+
+```javascript
+import { NavLink, Outlet } from 'react-router-dom';
+
+const Articles = () => {
+	const activeStyle = {
+		color: 'green',
+		fontSize: 21,
+	};
+	
+	return (
+		<div>
+			<Outlet />
+			<ul>
+				<li>
+					<NavLink 
+						to="/articles/1"
+						style={({ isActive }) => (isActive ? activeStyle  : undefined)}
+					>
+						게시글 1
+					</NavLink>
+				</li>
+				<li>
+					<NavLink 
+						to="/articles/2"
+						style={({ isActive }) => (isActive ? activeStyle : undefined)}
+					>
+						게시글 2
+					</NavLink>
+				</li>
+				<li>
+					<NavLink 
+						to="/articles/3"
+						style={({ isActive }) => (isActive ? activeStyle : undefined)}
+					>
+						게시글 3
+					</NavLink>
+				</li>
+			</ul>
+		</div>
+	);
+};
+
+export default Articles;
+```
+
+- 게시글 링크가 현재 반복되고 있는데 이를 다음과 같이 리팩토링할 수 있습니다.
+
+#### src/pages/Articles.js
+
+```javascript
+import { NavLink, Outlet } from 'react-router-dom';
+
+const Articles = () => {
+	return (
+		<div>
+			<Outlet />
+			<ul>
+				<ArticleItem id={1} />
+				<ArticleItem id={2} />
+				<ArticleItem id={3} />
+			</ul>
+		</div>
+	);
+};
+
+const ArticleItem = ({ id }) => {
+	const activeStyle = {
+		color: 'green',
+		fontSize: 21,
+	};
+	return (
+		<li>
+			<NavLink 
+				to={`/articles/${id}`}
+				style={({ isActive }) => (isActive ? activeStyle : undefined)}
+			>
+				게시글 {id}
+			</NavLink>
+		</li>
+	);
+};
+
+export default Articles;
+```
+
+### NotFound 페이지 만들기
+
+- 사전에 정의되지 않은 경로에 사용자가 진입했을 때 보여주는 페이지
+
+#### src/pages/NotFound.js
+
+```javascript
+const NotFound = () => {
+	return (
+		<div
+			style={{
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'center',
+				fontSize: 64,
+				position: 'absolute',
+				width: '100%',
+				height: '100%'
+			}}
+		>
+			404
+		</div>
+	);
+};
+
+export default NotFound;
+```
+
+#### src/App.js
+
+```javascript
+import { Route, Routes } from 'react-router-dom';
+import Layout from './Layout';
+import About from './pages/About';
+import Article from './pages/Article';
+import Articles from './pages/Articles';
+import Home from './pages/Home';
+import NotFound from './pages/NotFound';
+import Profile from './pages/Profile';
+
+const App = () => {
+	return (
+		<Routes>
+			<Route path="/" element={<Layout />}>
+				<Route index element={<Home />} />
+				<Route path="/about" element={<About />} />
+				<Route path="/profiles/:username" element={<Profile />} />
+			</Route>
+			<Route path="/articles" element={<Articles />}>
+				<Route path=":id" element={<Article />} />
+			</Route>
+			<Route path="*" element={<NotFound />} />
+		</Routes>
+	);
+};
+
+export default App;
+```
+
+> <code>\*</code>는 와일드카드 문자, 아무 텍스트나 매칭한다는 의미<br>이 라우트 요소의 상단에 위치하는 라우트들의 규칙을 모두 확인하고, 일치하는 라우트가 없다면 이 라우트가 화면에 나타나게 됩니다.
+
+### Navigate 컴포넌트
+
+- <code>Navigate</code> 컴포넌트는 컴포넌트를 화면에 보여주는 순간 다른 페이지로 이동을 하고 싶을 때 사용하는 컴포넌트입니다. 즉, 페이지를 리다이렉트 하고 싶을 때 사용
+
+#### src/pages/Login.js
+
+```javascript
+const Login = () => {
+	return <div>로그인 페이지</div>;
+};
+
+export default Login;
+```
+
+#### src/pages/MyPage.js
+
+```javascript
+import { Navigate } from 'react-router-dom';
+
+const MyPage = () => {
+	const isLoggedIn = false;
+	
+	if (!isLoggedIn) {
+		return <Navigate to="/login" replace={true} />;
+	}
+	
+	return <div>마이페이지</div>;
+};
+
+export default MyPage;
+```
+
+#### src/App.js 
+
+```javascript
+import { Route, Routes } from 'react-router-dom';
+import Layout from './layout';
+import About from './pages/About';
+import Article from './pages/Article';
+import Articles from './pages/Articles';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import MyPage from './pages/MyPage';
+import NotFound from './pages/NotFound';
+import Profile from './pages/Profile';
+
+const App = () => {
+	return (
+		<Routes>
+			<Route path="/" element={<Layout />}>
+				<Route index element={<Home />} />
+				<Route path="/about" element={<About />} />
+				<Route path="/profiles/:username" element={<Profile />} />
+			</Route>
+			<Route path="/articles" element={<Articles />}>
+				<Route path=":id" element={<Article />} />
+			</Route>
+			<Route path="/login" element={<Login />} />
+			<Route path="/mypage" element={<MyPage />} />
+			<Route path="*" element={<NotFound />} />
+		</Routes>
+	);
+};
+
+export default App;
+```
+
+> 브라우저에서 <code>/mypage</code> 경로 이동시 바로 <code>/login</code> 페이지로 이동

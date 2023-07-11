@@ -275,3 +275,195 @@ export default App;
 - 컴포넌트가 화면에 보이는 시점에 API를 요청
 - useEffect를 사용하여 컴포넌트가 처음 렌더링되는 시점에 API를 요청하면 된다.
 - 주의할 점: useEffect에 등록하는 함수에 async를 붙이면 안 되는데, useEffect에서 반환해야 하는 값은 뒷정리 함수이기 때문이다.
+- useEffect 내부에 async/await를 사용하고 싶다면, 함수 내부에 async 키워드가 붙은 또다른 함수를 만들어서 사용해 주어야 한다.
+
+#### components/NewsList.js 
+
+```javascript
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import NewsItem from './NewsItem';
+import axios from 'axios';
+
+const NewsListBlock = styled.div`
+	box-sizing: border-box;
+	padding-bottom: 3rem;
+	width: 768px;
+	margin: 0 auto;
+	margin-top: 2rem;
+	@media screen and (max-width: 768px) {
+		width: 100%;
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+`;
+
+const NewsList = () => {
+	const [article, setArticles] = useState(null);
+	const [loading, setLoading] = useStae(false);
+	
+	useEffect(() => {
+		// async를 사용하는 함수 따로 선언
+		const fetchData = async () => {
+			setLoading(true);
+			try {
+				const response = await axios.get(
+					'https://newsapi.org/v2/top-headlines?country=kr&apiKey=발급받은 api키'
+				);
+				setArticles(response.data.articles);
+			} catch(e) {
+				console.log(e);
+			}
+			setLoading(false);
+		};
+		fetchData();
+	}, []);
+	
+	// 대기 중일 때
+	if (loading) {
+		return <NewsListBlock>대기 중...</NewsListBlock>;
+	}
+	
+	// 아직 articles 값이 설정되지 않았을 때
+	if (!articles) {
+		return null;
+	}
+	
+	// articles 값이 유효할 때
+	return (
+		<NewsListBlock>
+			{articles.map(article => (
+				<NewsItem key={article.url} article={article} />
+			))}
+		</NewsListBlock>
+	)
+};
+
+export default NewsList;
+```
+
+> map 함수를 사용하기 전에 꼭 !articles를 조회하여 해당 값이 현재 null이 아닌지 검사해야 합니다. 이 작업을 하지 않으면, 아직 데이터가 없을 때 null에는 map 함수가 없기 때문에 렌더링 과정에서 오류가 발생합니다.
+
+## 카테고리 기능 구현하기
+
+### 카테고리 선택 UI 만들기
+
+#### components/Categories.js
+
+```javascript
+import styled from 'styled-components';
+
+const categories = [
+	{
+		name: 'all',
+		text: '전체보기',
+	},
+	{
+		name: 'business',
+		text: '비즈니스',
+	},
+	{
+		name: 'entertainment',
+		text: '엔터테인먼트',
+	},
+	{
+		name: 'health',
+		text: '건강',
+	},
+	{
+		name: 'science',
+		text: '과학',
+	},
+	{
+		name: 'sports',
+		text: '스포츠',
+	},
+	{
+		name: 'technology',
+		text: '기술',
+	}
+];
+
+const CategoriesBlock = styled.div`
+	display: flex;
+	padding: 1rem;
+	width: 768px;
+	margin: 0 auto;
+	@media screen and (max-width: 768px) {
+		width: 100%;
+		overflow-x: auto;
+	}
+`;
+
+const Category = styled.div`
+	font-size: 1.125rem;
+	cursor: pointer;
+	white-space: pre;
+	text-decoration: none;
+	color: inherit;
+	padding-bottom: 0.25rem;
+	
+	&:hover {
+		color: #495057;
+	}
+	
+	& + & {
+		margin-left: 1rem;
+	}
+`;
+
+const Categories = () => {
+	return (
+		<CategoriesBlock>
+			{categories.map(c => (
+				<Category key={c.name}>{c.text}</Category>
+			))}
+		</CategoriesBlock>
+	);
+};
+
+export default Categories;
+```
+
+#### App.js 
+
+```javascript
+import NewsList from './components/NewsList';
+import Categories from './components/Categories';
+
+const App = () => {
+	return (
+		<>
+			<Categories />
+			<NewsList />
+		</>
+	);	
+};
+
+export default App;
+```
+
+- App에서 category 상태를 useState로 관리하고, 추가로 category값을 업데이트 하는 onSelect라는 함수도 만들어 줍니다.
+- category와 onSelect 함수를 Categories 컴포넌트에게 props로 전달해 줍니다. 또한, category 값을 NewsList 컴포넌트에게도 전달해 주어야 합니다.
+
+#### App.js
+
+```javascript
+import { useState, useCallback } from 'react';
+import NewsList from './components/NewsList';
+import Categories from './components/Categories';
+
+const App = () => {
+	const [category, setCategory] = useState('all');
+	const onSelect = useCallback(category => setCategory(category), []);
+	
+	return (
+		<>
+			<Categories category={category} onSelect={onSelect} />
+			<NewsList category={category} />
+		</>
+	);
+};
+
+export default App;
+```

@@ -582,6 +582,58 @@ $ yarn add react-router-dom
 #### index.js
 
 ```javascript 
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import { BrowserRouter } from 'react-router-dom';
 
-
+ReactDOM.render(
+	<BrowserRouter>
+		<App />
+	</BrowserRouter>,
+	document.getElementById('root')
+);
 ```
+
+### NewsPage 생성 
+
+#### pages/NewsPage.js
+
+```javascript
+import { useParams } from 'react-router-dom';
+import Categories from '../components/Categories';
+import NewsList from '../components/NewsList';
+
+const NewsPage = () => {
+	// 카테고리가 선택되지 않았으면 기본값 all로 사용
+	const category = useParams().category || 'all';
+	
+	return (
+		<>
+			<Categories />
+			<NewsList category={category} />
+		</>
+	);
+};
+
+export default NewsPage;
+```
+
+#### App.js 
+
+```javascript
+import { Routes, Route } from 'react-router-dom';
+import NewsPage from './pages/NewsPage';
+
+const App = () => {
+	return (
+		<Routes>
+			<Route path="/:category?" element={<NewsPage />} />
+		</Routes>
+	);
+};
+
+export default App;
+```
+
+> 위 코드에서 사용된 path에 /:category? 와 같은 형태로 맨 뒤에 물음표 문자가 들어가 있는데, 이는 category 값이 선택적(optional)이라는 의미입니다. 즉 있을 수도 있고 없을 수도 있다는 뜻

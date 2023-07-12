@@ -554,7 +554,7 @@ const NewsList = ({ category }) => {
 			try {
 				const query = category === 'all' ? '' : `&category=${category}`;
 				const response = await axios.get(
-					`https://newsapi.org/v2/top-headlines?category=kr${query}&apiKey=발급받은 API키`
+					`https://newsapi.org/v2/top-headlines?country=kr${query}&apiKey=발급받은 API키`
 				);
 				setArticles(response.data.articles);
 			} catch (e) {

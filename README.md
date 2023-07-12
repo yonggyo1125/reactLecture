@@ -21,6 +21,7 @@
 - ref는 어떤 상황에서 사용해야 될까?
 - ref 사용
 - 컴포넌트에 ref 달기
+- [동영상강의](https://drive.google.com/drive/folders/19BEZml8JJELUHwUOFFY5uqR8NoM2yiAH?usp=drive_link)
 
 ## 컴포넌트 반복 
 
@@ -28,6 +29,7 @@
 - 데이터 배열을 컴포넌트 배열을 변환하기 
 - key
 - 응용
+- [동영상강의](https://drive.google.com/drive/folders/1WrZGnX_h8Yk9NhkkLn1hr-sDfKJlVG3C?usp=drive_link)
 
 ## 컴포넌트 라이프사이클 메서드
 

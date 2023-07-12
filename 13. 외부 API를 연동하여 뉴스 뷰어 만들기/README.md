@@ -579,3 +579,9 @@ export default NewsList;
 $ yarn add react-router-dom
 ```
 
+#### index.js
+
+```javascript 
+
+
+```

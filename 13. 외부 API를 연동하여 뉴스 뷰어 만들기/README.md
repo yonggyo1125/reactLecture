@@ -570,3 +570,12 @@ const NewsList = ({ category }) => {
 
 export default NewsList;
 ```
+
+## 리액트 라우터 적용하기 
+
+### 리액트 라우터 설치 및 적용 
+
+```
+$ yarn add react-router-dom
+```
+

@@ -637,3 +637,64 @@ export default App;
 ```
 
 > 위 코드에서 사용된 path에 /:category? 와 같은 형태로 맨 뒤에 물음표 문자가 들어가 있는데, 이는 category 값이 선택적(optional)이라는 의미입니다. 즉 있을 수도 있고 없을 수도 있다는 뜻
+
+### Categories에서 NavLink 사용하기
+
+#### components/Categories.js
+
+```javascript
+import styled from 'styled-components';
+import { NavLink } from 'react-router-dom';
+
+const Categories = {
+	...
+};
+
+const CategoriesBlock = styled.div`
+	...
+`;
+
+const Category = styled(NavLink)`
+	font-size: 1.125rem;
+	cursor: pointer;
+	white-space: pre;
+	text-decoration: none;
+	color: inherit;
+	padding-bottom: 0.25rem;
+
+	&:hover {
+		color: #495057;
+	}
+
+	&.active {
+		font-weight: 600;
+		border-bottom: 2px solid #22b8cf;
+		color: #22b8cf;
+		&:hover {
+			color: #3bc9db;
+		}
+	}
+
+	& + & {
+		margin-left: 1rem;
+	}
+`;
+
+const Categories = () => {
+	return (
+		<CategoriesBlock>
+			{categories.map(c => (
+				<Category 
+					key={c.name}
+					className={({isActive}) => isActive ? 'active' : 'undefined'}
+					to={c.name === 'all' ? '/' : `/${c.name}`}	
+				>
+				{c.text}
+				</Category>
+			))}
+		</CategoriesBlock>
+	);
+};
+
+export default Categories;
+```

@@ -698,3 +698,82 @@ const Categories = () => {
 
 export default Categories;
 ```
+
+## usePromise 커스텀 Hook 만들기
+> 컴포넌트에서 API 호출처럼 Promise를 사용해야 하는 경우 더욱 간결하게 코드를 작성할 수 있도록 해 주는 커스텀 Hook을 만들어서 적용해 봅니다.
+
+#### lib/usePromise.js
+
+```javascript
+import { useState, useEffect } from 'react';
+
+export default function usePromise(promiseCreator, deps) {
+	// 대기 중/완료/실패에 대한 상태 관리
+	const [loading, setLoading] = useState(false);
+	const [resolved, setResolved] = useState(null);
+	const [error, setError] = useState(null);
+
+	useEffect(() => {
+		const process = async () => {
+			setLoading(true);
+			try {
+				const resolved = await promiseCreator();
+				setResolved(resolved);
+			} catch (e) {
+				setError(e);
+			}
+			setLoading(false);
+		};
+		process();
+	}, deps);
+
+	return [loading, resolved, error];
+}
+```
+
+#### components/NewList.js
+
+```javascript
+import styled from 'styled-components';
+import NewsItem from './NewsItem';
+import axios from 'axios';
+import usePromise from '../lib/usePromise';
+
+const NewsListBlock = styled.div`
+	...
+`;
+
+const NewsList = ({ category }) => {
+	const [laoding, response, error] = usePromise(() => {
+		const query = category === 'all' ? '' : `&category=${category}`;
+		return axios.get(`https://newsapi.org/v2/top-headlines?country=kr${query}&apiKey=발급받은 API키`);
+	}, [category]);
+
+	// 대기 중일 때
+	if (loading) {
+		return <NewsListBlock>대기 중...</NewsListBlock>;
+	}
+
+	// 아직 response 값이 설정되지 않았을 때
+	if (!response) {
+		return null;
+	}
+
+	// 에러가 발생했을 때
+	if (error) {
+		return <NewsListBlock>에러 발생!</NewsListBlock>;
+	}
+
+	// response 값이 유효할 때
+	const { articles } = response.data;
+	return (
+		<NewsListBlock>
+			{articles.map(article => (
+				<NewsItem key={article.url} article={article} />
+			))}
+		</NewsListBlock>
+	);
+};
+
+export default NewsList;
+```

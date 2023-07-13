@@ -70,9 +70,11 @@
 - 불변성의 중요성
 - react-virtualized를 사용한 렌더링 최적화
 
+
 ## immer를 사용하여 더 쉽게 불변성 유지하기
 
 - immer를 설치하고 사용법 알아보기
+
 
 ## 리액트 라우터로 SPA 개발하기
 
@@ -82,6 +84,7 @@
 - URL 파라미터와 쿼리스트링
 - 중첩된 라우트
 - 리액트 라우터 부가기능 
+
 
 ## 외부 API를 연동하여 뉴스 뷰어 만들기
 
@@ -93,3 +96,11 @@
 - 카테고리 기능 구현하기
 - 리액트 라우터 적용하기
 - usePromise 커스텀 Hook 만들기
+
+
+## Context API
+
+- Context API를 사용한 전역 상태 관리 흐름 이해하기
+- Context API 사용법 익히기
+- 동적 Context 사용하기
+- Consumer 대신 Hook 또는 static contextType 사용하기

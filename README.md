@@ -104,3 +104,9 @@
 - Context API 사용법 익히기
 - 동적 Context 사용하기
 - Consumer 대신 Hook 또는 static contextType 사용하기
+
+## 리덕스 라이브러리 이해하기
+
+- 개념 정리하기 
+- 리액트 없이 쓰는 리덕스
+- 리덕스의 세 가지 규칙

@@ -332,3 +332,101 @@ import { createStore } from 'redux';
 
 const store = createStore(reducer);
 ```
+
+- 스토어를 생성했으므로 스토어 내장 함수를 사용할 수 있습니다.
+
+### render 함수 만들기
+
+- 이 함수는 상태가 업데이트될 때마다 호출되며, 리액트의 render 함수와는 다르게 이미 html을 사용하여 만들어진 UI 속성을 상태에 따라 변경해 줍니다.
+
+#### index.js
+
+```javascript
+...
+
+const store = createStore(reducer);
+
+const render = () => {
+    const state = store.getState(); // 현재 상태를 불러옵니다.
+
+    // 토클 처리
+    if (state.toggle) {
+        divToggle.classList.add('active');
+    } else {
+        divToggle.classList.remove('active');
+    }
+
+    // 카운터 처리
+    counter.innerText = state.counter;
+};
+
+render();
+```
+
+## 구독하기 
+
+- 스토어의 상태가 바뀔 때마다 render() 함수가 호출되도록 처리합니다. 이 작업은 스토어의 내장 함수 subscribe를 사용하여 수행할 수 있습니다.
+- 추후 리액트 프로젝트에서 리덕스를 사용할 때는 이 함수를 직접 사용하지 않습니다. 컴포넌트에서 리덕스 상태 조회하는 과정에서 react-redux라는 라이브러리가 이 작업을 대신해 줍니다.
+
+
+#### index.js 
+
+```javascript
+...
+
+const render = () => {
+    const state = store.getState(); // 현재 상태를 불러옵니다.
+    // 토클 처리
+    if (state.toggle) {
+        divToggle.classList.add('active');
+    } else {
+        divToggle.classList.remove('active');
+    }
+    // 카운터 처리
+    counter.innerText = state.counter;
+};
+
+render();
+store.subscibe(render);
+```
+
+### 액션 발생시키기
+
+#### index.js
+
+```javascript
+...
+
+divToggle.onclick = () => {
+    store.dispatch(toggleSwitch());
+};
+btnIncrease.onclick = () => {
+    store.dispatch(increase(1));
+};
+
+btnDecrease.onclick = () => {
+    store.dispatch(decrease());
+};
+```
+
+## 리덕스의 세 가지 규칙 
+
+### 단일 스토어
+
+- 하나의 애플리케이션 안에는 하나의 스토어가 들어가 있습니다.
+- 여러개의 스토어를 사용하는 것이 완전히 불가능하지는 않습니다. 특정 업데이트가 너무 빈번하게 일어나거나 애플리케이션의 특정 부분을 완전히 분리시킬 때 여러 개의 스토어를 만들수도 있지만, 상태 관리가 복잡해질 수 있으므로 권장하지 않습니다.
+
+### 읽기 전용 상태
+
+- 리덕스 상태는 읽기 전용입니다. 리덕스도 상태를 업데이트할 때 기존의 객체는 건드리지 않고 새로운 객체를 생성해 주어야 합니다.
+- 리덕스에서 불변성을 유지해야 하는 이유는 내부적으로 데이터가 변경되는 것을 감지하기 위해 얕은 비교(shallow equality) 검사를 하기 때문입니다. 
+- 객체 변화를 감지할 때 객체의 깊숙한 안쪽까지 비교하는 것이 아니라 겉핥기 식으로 비교하여 좋은 성능을 유지할 수 있는 것 입니다.
+
+### 리듀서는 순수한 함수
+
+- 변화를 일으키는 리듀서 함수는 순수한 함수여야 합니다.
+- 순수한 함수는 다음 조건을 만족합니다.
+    - 리듀서 함수는 이전 상태와 액션 객체를 파라미터로 받습니다.
+    - 파라미터 외의 값에는 의존하면 안 됩니다.
+    - 이전 상태는 절대로 건드리지 않고, 변화를 준 새로운 상태 객체를 만들어서 반환합니다.
+    - 똑같은 파라미터로 호출된 리듀서 함수는 언제나 똑같은 결과 값을 반환해야 합니다.

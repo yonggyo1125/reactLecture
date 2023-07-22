@@ -317,3 +317,132 @@ function todos(state = initialState, action) {
 
 export default todos;
 ```
+
+### 루트 리듀서 만들기
+
+- createStore 함수를 사용하여 스토어를 만들 때는 리듀서를 하나만 사용하여야 하므로 리듀서를 하나로 합쳐야 합니다.
+- 이 작업은 리덕스에서 제공하는 combineReducers라는 유틸 함수를 사용하면 쉽게 처리할 수 있습니다.
+
+#### modules/index.js
+
+```javascript
+import { combineReducers } from "redux";
+import counter from "./counter";
+import todos from "./todos";
+
+const rootReducer = combineReducers({
+  counter,
+  todos,
+});
+
+export default rootReducer;
+```
+
+> 파일 이름을 index.js로 설정해 주면 불러올 때 디렉터리 이름까지만 입력하여 불러올 수 있습니다.
+
+```javascript
+import rootReducer from "./modules";
+```
+
+## 리액트 애플리케이션에 리덕스 적용하기
+
+### 스토어 만들기
+
+#### src/index.js
+
+```javascript
+import ReactDOM from "react-dom";
+import { createStore } from "redux";
+import "./index.css";
+import App from "./App";
+const rootReducer from './modules';
+
+const store = createStore(rootReducer);
+
+ReactDOM.render(<App />, document.getElementById('root'));
+```
+
+### Provider 컴포넌트를 사용하여 프로젝트에 리덕스 적용하기
+
+> 리액트 컴포넌트에서 스토어를 사용할 수 있도록 App 컴포넌트를 react-redux에서 제공하는 Provider 컴포넌트로 감싸 줍니다. 이 컴포넌트를 사용할 때는 store를 props로 전달해 주어야 합니다.
+
+#### src/index.js
+
+```javascript
+import ReactDOM from "react-dom";
+import { createStore } from "redux";
+import { Provider } from "react-redux";
+import "./index.css";
+import App from "./App";
+import rootReducer from "./modules";
+
+const store = createStore(rootReducer);
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById("root")
+);
+```
+
+### Redux DevTools의 설치 및 적용
+
+- Redux DevTools는 리덕스 개발자 도구이며, 크롬 확장 프로그램으로 설치하여 사용할 수 있습니다.
+- 크롬 웹 스토어(https://chrome.google.com/webstore/)에서 Redux DevTools를 검색하여 설치합니다.
+- 설치하고 나면 리덕스 스토어를 만드는 과정에서 다음과 같이 적용합니다.
+
+```javascript
+const store = createStore(
+  rootReducer /* preloadedState, */,
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
+```
+
+- 패키지를 설치하여 적용하면 코드가 깔끔해집니다. 패키지를 설치하고 적용해 봅니다.
+- 패키지를 설피하여 사용한다고 해도 크롬 확장 프로그램은 설치해야 합니다.
+
+```
+$ yarn add redux-devtools-extension
+```
+
+- 다음과 같이 적용해 줍니다.
+
+#### src/index.js
+
+```javascript
+import ReactDOM from "react-dom";
+import { createStore } from "redux";
+import { Provider } from "react-redux";
+import { composeWithDevTools } from "redux-devtools-extension";
+import "./index.css";
+import App from "./App";
+import rootReducer from "./modules";
+
+const store = createStore(rootReducer, composeWithDevTools());
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById("root")
+);
+```
+
+## 컨테이너 컴포넌트 만들기
+
+> 리덕스 스토어와 연동된 연동된 컴포넌트를 컨테이너 컴포넌트라고 부릅니다.
+
+### CounterContainer 만들기
+
+#### containers/CounterContainer.js
+
+```javascript
+import Counter from "../components/Counter";
+
+const CounterContainer = () => {
+  return <Counter />;
+};
+
+export default CounterContainer;
+```

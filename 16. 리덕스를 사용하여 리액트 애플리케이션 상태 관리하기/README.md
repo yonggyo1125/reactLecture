@@ -446,3 +446,123 @@ const CounterContainer = () => {
 
 export default CounterContainer;
 ```
+
+- 위 컴포넌트를 리덕스와 연동하려면 react-redux에서 제공하는 connect 함수를 사용해야 합니다.
+
+```javascript
+connect(mapStateToProps, mapDispatchToProps)(연동할 컴포넌트)
+```
+
+- **mapStateToProps** : 리덕스 스토어 안의 상태를 컴포넌트의 props로 넘겨주기 위해 설정하는 함수
+- **mapDispatchToProps** : 액션 생성 함수를 컴포넌트의 props로 넘겨주기 위해 사용하는 함수
+- connect 함수를 호출하고 나면 다른 함수를 반환합니다. 반환된 함수에 컴포넌트를 파라미터로 넣어 주면 리덕스와 연동된 컴포넌트가 만들어집니다.
+
+```javascript
+const makeContainer = connect(mapStateToProps, mapDispatchToProps);
+makeContainer(타깃 컴포넌트);
+```
+
+#### containers/CounterContainer.js
+
+```javascript
+import { connect } from "react-redux";
+import Counter from "../components/Counter";
+
+const CounterContainer = ({ number, increase, decrease }) => {
+  return (
+    <Counter number={number} onIncrease={increase} onDecrease={decrease} />
+  );
+};
+
+const mapStateToProps = (state) => ({
+  number: state.counter.number,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  // 임시함수
+  increase: () => {
+    console.log("increase");
+  },
+  decrease: () => {
+    console.log("decrease");
+  },
+});
+export default connect(mapStateToProps, mapDispatchToProps)(CounterContainer);
+```
+
+#### App.js
+
+```javascript
+import Todos from "./components/Todos";
+import CounterContainer from "./containers/CounterContainer";
+
+const App = () => {
+  return (
+    <div>
+      <CounterContainer />
+      <hr />
+      <Todos />
+    </div>
+  );
+};
+
+export default App;
+```
+
+#### containers/CounterContainer.js
+
+```javascript
+import { connect } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = ({ number, increase, decrease }) => {
+  return (
+    <Counter number={number} onIncrease={increase} onDecrease={decrease} />
+  );
+};
+
+const mapStateToProps = (state) => ({
+  number: state.counter.number,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  increase: () => {
+    dispatch(increase());
+  },
+  decrease: () => {
+    dispatch(decrease());
+  },
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(CounterContainer);
+```
+
+> connect 함수를 사용할 때는 일반적으로 mapStateToProps와 mapDispatchToProps를 미리 선언해 놓고 사용합니다. 그러나 connect 함수에 익명 함수 형태로 선언해도 됩니다.
+
+#### containers/CounterContainer.js
+
+```javascript
+import { connect } from "react-redux";
+import Counter from "../components/Counter";
+
+const CounterContainer = ({ numner, increase, decrease }) => {
+  return (
+    <Counter number={number} onIncrease={increase} onDecrease={decrease} />
+  );
+};
+
+const mapStateToProps = (state) => ({
+  number: state.counter.number,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  increase: () => {
+    console.log("increase");
+  },
+  decrease: () => {
+    console.log("decrease");
+  },
+});
+export default connect(mapStateToProps, mapDispatchProps)(CounterContainer);
+```

@@ -552,17 +552,622 @@ const CounterContainer = ({ numner, increase, decrease }) => {
   );
 };
 
-const mapStateToProps = (state) => ({
-  number: state.counter.number,
-});
+export derault connect(
+  state => ({
+    number: state.counter.number,
+  }),
+  dispatch => ({
+    increase: () => dispatch(increase()),
+    decrease: () => dispatch(decrease()),
+  }),
+)(CounterContainer);
+```
 
-const mapDispatchToProps = (dispatch) => ({
-  increase: () => {
-    console.log("increase");
+> 컴포넌트에서 액션을 디스패치하기 위해 각 액션 생성 함수를 호출하고 dispatch로 감싸는 작업이 번거로울 수 있습니다. 액션 생성함수의 개수가 많아지면 더더욱 그렇습니다. 이런 경우는 리덕스에서 제공하는 **bindActionCreators** 유틸 함수를 사용하면 간편합니다.
+
+#### containers/CounterContainer.js
+
+```javascript
+import { bindActionCreators } from "redux";
+import { connect } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = ({ number, increase, decrease }) => {
+  return (
+    <Counter number={number} onIncrease={increase} onDecrease={decrease} />
+  );
+};
+
+export default connect(
+  (state) => ({
+    number: staet.counter.number,
+  }),
+  (dispatch) =>
+    bindActionCreators(
+      {
+        increase,
+        decrease,
+      },
+      dispatch
+    )
+)(CounterContainer);
+```
+
+> 더 편한 방법이 있는데, mapDispatchToProps에 해당하는 파라미터를 함수 형태가 아닌 액션 생성 함수로 이루어진 객체 형태로 넣어 주는 것입니다.
+
+#### containers/CounterContainer.js
+
+```javascript
+import { connect } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = ({ number, increase, decrease }) => {
+  return (
+    <Counter number={number} onIncrease={increase} onDecrease={decrease} />
+  );
+};
+
+export default connect(
+  (state) => ({
+    number: state.counter.number,
+  }),
+  {
+    increase,
+    decrease,
+  }
+)(CounterContainer);
+```
+
+> 두 번째 파라미터를 객체 형태로 넣어 주면 connect 함수가 내부적으로 bindActionCreators 작업을 대신해 줍니다.
+
+### TodosContainer 만들기
+
+#### containers/TodosContainer.js
+
+```javascript
+import { connect } from "react-redux";
+import { changeInput, insert, toggle, remove } from "../module/todos";
+import Todos from "../components/Todos";
+
+const TodosContainer = ({
+  input,
+  todos,
+  changeInput,
+  insert,
+  toggle,
+  remove,
+}) => {
+  return (
+    <Todos
+      input={input}
+      todos={todos}
+      onChangeInput={changeInput}
+      onInsert={insert}
+      onToggle={toggle}
+      onRemove={remove}
+    />
+  );
+};
+
+export default connect(
+  ({ todos }) => ({
+    input: todos.input,
+    todos: todos.todos,
+  }),
+  {
+    changeInput,
+    insert,
+    toggle,
+    remove,
+  }
+)(TodosContainer);
+```
+
+#### App.js
+
+```javascript
+import CounterContainer from "./containers/CounterContainer";
+import TodosContainer from "./containers/TodosContainer";
+
+const App = () => {
+  return (
+    <div>
+      <CounterContainer />
+      <hr />
+      <TodosContainer />
+    </div>
+  );
+};
+
+export default App;
+```
+
+#### components/Todos.js
+
+```javascript
+const TodoItem = ({ todo, onToggle, onRemove }) => {
+  return (
+    <div>
+      <input
+        type="checkbox"
+        onClick={() => onToggle(todo.id)}
+        checked={todo.done}
+        readOnly={true}
+      />
+      <span style={{ textDecoration: todo.done ? "line-through" : "done" }}>
+        {todo.text}
+      </span>
+      <button onClick={() => onRemove(todo.id)}>삭제</button>
+    </div>
+  );
+};
+
+const Todos = ({
+  input, // 인풋에 입력되는 텍스트
+  todos, // 할 일 목록이 들어 있는 객체
+  onChangeInput,
+  onInsert,
+  onToggle,
+  onRemove,
+}) => {
+  const onSubmit = (e) => {
+    e.preventDefault();
+    onInsert(input);
+    onChangeInput(""); // 등록 후
+  };
+
+  const onChange = (e) => onChangeInput(e.target.value);
+  return (
+    <div>
+      <form onSubmit={onSubmit}>
+        <input value={input} onChange={onChange} />
+        <button type="submit">등록</button>
+      </form>
+      <div>
+        {todos.map((todo) => (
+          <TodoItem
+            todo={todo}
+            key={todo.id}
+            onToggle={onToggle}
+            onRemove={onRemove}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Todos;
+```
+
+## 리덕스 더 편하게 사용하기
+
+### redux-actions
+
+- redux-actions를 사용하면 액션 생성함수를 더 짧은 코드로 작성할 수 있습니다.
+- 리듀서를 작성할 때도 switch/case 문이 아닌 handleActions라는 함수를 사용하여 각 액션마다 업데이트 함수를 설정하는 형식으로 작성해 줄 수 있습니다.
+
+```
+$ yarn add redux-actions
+```
+
+### counter 모듈에 적용하기
+
+#### modules/counter.js
+
+```javascript
+import { createAction } from 'redux-actions';
+
+const INCREASE = 'counter/INCREASE';
+const DECREASE = 'counter/DECREASE';
+
+export const increase = createAction(INCREASE);
+export const decrease = createAction(DECREASE);
+
+...
+```
+
+- handleActions라는 함수를 사용하면 리듀서 함수도 더 간단하고 가독성 높게 작성할 수 있습니다.
+
+#### modules/counter.js
+
+```javascript
+import { createAction, handleActions } from "redux-actions";
+
+const INCREASE = "counter/INCREASE";
+const DECREASE = "counter/DECREASE";
+
+export const increase = createAction(INCREASE);
+export const decrease = createAction(DECREASE);
+
+const initialState = {
+  number: 0,
+};
+
+const counter = handleActions(
+  {
+    [INCREASE]: (state, action) => ({ number: state.number + 1 }),
+    [DECREASE]: (state, action) => ({ number: state.number - 1 }),
   },
-  decrease: () => {
-    console.log("decrease");
+  initialState
+);
+```
+
+### todos 모듈에 적용하기
+
+- createAction으로 액션을 만들면 액션에 필요한 추가 데이터는 payload라는 이름을 사용합니다.
+
+```javascript
+const MY_ACTION = "sample/MY_ACTION";
+const myAction = createAction(MY_ACTION);
+const action = myAction("hello worl");
+
+/*
+  결과:
+  { type: MY_ACTION, payload: 'hello world' }
+*/
+```
+
+- 액션 생성 함수에서 받아 온 파라미터를 그대로 payload에 넣는 것이 아니라 변형을 주어서 넣고 싶다면, createAction의 두 번째 함수에 payload를 정의하는 함수를 따로 선언해서 넣어 주면 됩니다.
+
+```javascript
+const MY_ACTION = "sample/MY_ACTION";
+const myAction = crreateAction(MY_ACTION, (text) => `${text}!`);
+const action = myAction("hello world");
+/*
+  결과:
+  { type: MY_ACTION, payload: 'hello world!' }
+*/
+```
+
+#### modules/todos.js
+
+```javascript
+import { createAction } from "redux-actions";
+
+const CHANGE_INPUT = "todos/CHANGE_INPUT"; // 인풋 값을 변경함
+const INSERT = "todos/INSERT"; // 새로운 todo를 등록함
+const TOGGLE = "todos/TOGGLE"; // todo를 체크/체크 해제함
+const REMOVE = "todos/REMOVE"; // todo를 제거함
+
+export const changeInput = createAction(CHANGE_INPUT, (input) => input);
+
+let id = 3; // insert가 호출될 때마다 1씩 더해집니다.
+export const insert = createAction(INSERT, (text) => ({
+  id: id++,
+  text,
+  done: false,
+}));
+
+export const toggle = createAction(TOGGLE, (id) => id);
+export const remove = createAction(REMOVE, (id) => id);
+```
+
+> 액션 생성 함수는 액션에 필요한 추가 데이터를 모두 payload라는 이름으로 사용하기 때문에 action.id, action.todo를 조회하는 대신, 모두 공통적으로 action.payload 값을 조회하도록 리듀서를 구현해 주어야 합니다.
+
+#### modules/Todos.js
+
+```javascript
+import { createAction, handleActions } from 'redux-actions';
+
+...
+
+const todos = handleActions(
+  {
+    [CHANGE_INPUT]: (state, action) => ({ ...state, input: action.payload }),
+    [INSERT]: (state, action) => ({
+      ...state,
+      todos: state.todos.concat(action.payload),
+    }),
+    [TOGGLE]: (state, action) => ({
+      ...state,
+      todos: state.todos.map(todo =>
+        todo.id === action.payload ? { ...todo, done: !todo.done } : todo,
+      ),
+    }),
+    [REMOVE]: (state, action) => ({
+      ...state,
+      todos: state.todos.filter(todo => todo.id !== action.payload),
+    }),
+  }
+  initialState,
+);
+
+export default todos;
+```
+
+> 모든 추가 데이터 값을 action.payload로 사용하기 때문에 리듀서 코드를 볼때 혼동이 있을 수 있습니다. 객체 비구조화 할당 문법으로 action 값의 payload 이름을 새로 설정해 주면 action.payload가 정확히 어떤 값을 의미하는지 더 쉽게 파악할 수 있습니다.
+
+#### modules/todos.js
+
+```javascript
+...
+
+const todos = handleActions(
+  {
+    [CHANGE_INPUT]: (state, { payload: input }) => ({ ...state, input }),
+    [INSERT]: (state, { payload: todo }) => ({
+      ...state,
+      todos: state.todos.concat(todo),
+    }),
+    [TOGGLE]: (state, { payload: id }) => ({
+      ...state,
+      todos: state.todos.map(todo => todo.id === id ? { ...todo, done: !todo.done } : todo)
+    }),
+    [REMOVE]: (state, { payload: id }) => ({
+      ...state,
+      todos: state.todos.filter(todo => todo.id !== id),
+    }),
   },
-});
-export default connect(mapStateToProps, mapDispatchProps)(CounterContainer);
+  initialState
+);
+
+export default todos;
+```
+
+### immer
+
+- 리듀서에서 상태를 업데이트할 때는 불변성을 지켜야 하기 때문에 spread 연산자(...)와 배열의 내장 함수를 활용했습니다. 그러나 모듈의 상태가 복잡해질수록 불편성을 지키기가 까다로워집니다.
+- 객체의 구조가 복잡해지거나 객체로 이루어진 배열을 다룰 경우, immer를 사용하면 훨신 편리하게 상태를 관리할 수 있습니다.
+
+```
+$ yarn add immer
+```
+
+#### modules/todos.js
+
+```javascript
+import { createAction, handleActions } from 'redux-actions';
+import produce from 'immer';
+
+...
+
+const todos = handleActions(
+  {
+    [CHANGE_INPUT]: (state, { payload: input }) =>
+      produce(state, draft => {
+        draft.input = input;
+      }),
+    [INSERT]: (state, { payload: todo }) =>
+      produce(state, draft => {
+        draft.todos.push(todo);
+      }),
+    [TOGGLE]: (state, { payload: id }) =>
+      produce(state, draft => {
+        const todo = draft.todos.find(todo => todo.id === id);
+        todo.done = !todo.done;
+      }),
+    [REMOVE]: (state, { payload: id }) =>
+      produce(state, draft => {
+        const index = draft.todos.findIndex(todo => todo.id === id);
+        draft.todos.splice(index, 1);
+      }),
+  },
+  initialState,
+);
+
+export default todos;
+```
+
+## Hooks를 사용하셔 컨테이너 컴포넌트 만들기
+
+> 리덕스 스토어와 연동된 컨테이너 컴포넌트를 만들 때 connect 함수를 사용하는 대신 react-redux에서 제공하는 Hooks를 사용할 수도 있습니다.
+
+### useSelector로 상태 조회하기
+
+- useSelector Hook을 사용하면 connect 함수를 사용하지 않아도 리덕스의 상태를 조회할 수 있습니다.
+
+```javascript
+const 결과 = useSelector(상태 선택 함수);
+```
+
+- 상태 선택 함수는 mapStateToProps의 형태와 동일합니다.
+- CounterContainer에서 connect 함수 대신 useSelector를 사용하여 counter.number 값을 조회함으로써 Counter에게 props를 넘겨 줍니다.
+
+#### containers/CounterContainer.js
+
+```javascript
+import { useSelector } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = () => {
+  const number = useSelector((state) => state.counter.number);
+  return <Counter number={number} />;
+};
+
+export default CounterContainer;
+```
+
+### useDispatch를 사용하여 액션 디스패치하기
+
+- 이 Hook은 컴포넌트 내부에서 스토어의 내장 함수 dispatch를 사용할 수 있게 해 줍니다.
+- 컨테이너 컴포넌트에서 액션을 디스패치해야 한다면 이 Hook을 사용하면 됩니다.
+
+```javascript
+const dispatch = useDispatch();
+dispatch({ type: "SAMPLE_ACTION" });
+```
+
+#### containers/CounterContainer.js
+
+```javascript
+import { useSelector, useDispatch } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = () => {
+  const number = useSelector((state) => state.counter.number);
+  const dispatch = useDispatch();
+  return (
+    <Counter
+      number={number}
+      onIncrease={() => dispatch(increase())}
+      onDecrease={() => dispatch(decrease())}
+    />
+  );
+};
+
+export default CounterContainer;
+```
+
+- 숫자가 바뀔때마다 컴포넌트가 리렌더링되고 onIncrease 함수와 onDecrease 함수가 새롭게 만들어지고 있습니다.
+- useCallback으로 액션을 디스패치하는 함수를 감싸주면 컴포넌트 성능을 최적화할 수 있습니다.
+
+#### containers/CounterContainer.js
+
+```javascript
+import { useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = () => {
+  const number = useSelector((state) => state.counter.number);
+  const dispatch = useDispatch();
+  const onIncrease = useCallback(() => dispatch(increase()), [dispatch]);
+  const onDecrease = useCallback(() => dispatch(decrease()), [dispatch]);
+  return (
+    <Counter number={number} onIncrease={onIncrease} onDecrease={onDecrease} />
+  );
+};
+
+export default CounterContainer;
+```
+
+> useDispatch를 사용할 땐 useCallback과 함께 쓰는 것이 좋습니다.
+
+### useStore를 사용하여 리덕스 스토어 사용하기
+
+- useStore Hooks를 사용하면 컴포넌트 내부에서 리덕스 스토어 객체를 직접 사용할 수 있습니다.
+- useStore는 어쩔수 없이 스토어에 직접 접근해야 하는 상황에서만 사용해야 합니다. 사용하는 경우가 많지 않습니다.
+
+```javascript
+const store = useStore();
+store.dispatch({ type: "SAMPLE_ACTION" });
+store.getState();
+```
+
+### TodosContainer를 Hooks로 전환하기
+
+- TodosContainer를 connect 함수 대신에 useSeletor와 useDispatch Hooks를 사용하는 방식으로 변경해 봅시다.
+
+#### containers/TodosContainer.js
+
+```javascript
+import { useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { changeInput, insert, toggle, remove } from "../modules/todos";
+import Todos from "../components/Todos";
+
+const TodosContainer = () => {
+  const { input, todos } = useSelector(({ todos }) => ({
+    input: todos.input,
+    todos: todos.todo,
+  }));
+  const dispatch = useDispatch();
+  const onChangeInput = useCallback(
+    (input) => dispatch(changeInput(input)),
+    [dispatch]
+  );
+  const onInsert = useCallback((text) => dispatch(insert(text)), [dispatch]);
+  const onToggle = useCallback((id) => dispatch(toggle(id)), [dispatch]);
+  const onRemove = useCallback((id) => dispatch(remove(id)), [dispatch]);
+
+  return (
+    <Todos
+      input={input}
+      todos={todos}
+      onChangeInput={onChangeInput}
+      onInsert={onInsert}
+      onToggle={onToggle}
+      onRemove={onRemove}
+    />
+  );
+};
+
+export default TodosContainer;
+```
+
+### useActions 유틸 Hooks을 만들어서 사용하기
+
+- useActions는 원래 react-redux에 내장된 상태로 릴리즈될 계획이었으나 리덕스 개발 팀에서 꼭 필요하지 않다고 판단하여 제외된 Hook 입니다. 그 대신 공식 문서에서 그대로 복사하여 사용할 수 있도록 제공하고 있습니다.
+- [참고링크](https://react-redux.js.org/next/api/hooks#recipe-useactions)
+- 이 Hook을 사용하면 여러 개의 액션을 사용해야 하는 경우 코드를 깔끔하게 정리하여 작성할 수 있습니다.
+
+#### lib/useActions.js
+
+```javascript
+import { bindActionCreators } from "redux";
+import { useDispatch } from "react-redux";
+import { useMemo } from "react";
+
+export default function useActions(actions, deps) {
+  const dispatch = useDispatch();
+  return useMemo(
+    () => {
+      if (Array.isArray(actions)) {
+        return actions.map((a) => bindActionCreators(a, dispatch));
+      }
+      return bindActionCreators(actions, dispatch);
+    },
+    deps ? [dispatch, ...deps] : deps
+  );
+}
+```
+
+#### containers/TodosContainer.js
+
+```javascript
+import { useSelector } from "react-redux";
+import { changeInput, insert, toggle, remove } from "../modules/todos";
+import Todos from "../components/Todos";
+import useActions from "../lib/useActions";
+
+const TodosContainer = () => {
+  const { input, todos } = useSelector(({ todos }) => ({
+    input: todos.input,
+    todos: todos.todo,
+  }));
+
+  const [onChangeInput, onInsert, onToggle, onRemove] = useActions(
+    [chagneInput, insert, toggle, remove],
+    []
+  );
+  return (
+    <Todos
+      input={input}
+      todos={todos}
+      onChangeInput={onChangeInput}
+      onInsert={onInsert}
+      onToggle={onToggle}
+      onRemove={onRemove}
+    />
+  );
+};
+
+export default TodosContainer;
+```
+
+### connect 함수와의 주요 차이점
+
+- **connect 함수**를 사용하여 컨테이너 컴포넌트를 만들었을 경우, 해당 컨테이너 컴포넌트의 부모 컴포넌트가 리렌더링될 때 해당 컨테이너 컴포넌트의 props가 바뀌지 않았다면 리렌더링이 자동으로 방지되어 성능이 최적화됩니다.
+- **useSelector 함수**를 사용하여 리덕스 상태를 조회했을 때는 이 최적화 작업이 자동으로 이루어지지 않으므로, 성능 최적화를 위해서는 React.memo를 컨테이너 컴포넌트에 사용해 주어야 합니다.
+
+#### containers/TodosContainer.js
+
+```javascript
+import React from "react";
+import { useSelector } from "react-redux";
+import { changeInput, insert, toggle, remove } from "../modules/todos";
+import Todos from "../components/Todos";
+import useActions from "../lib/useActions";
+
+const TodosContainer = () => {
+  ...
+};
+
+export default React.memo(TodosContainer);l
 ```

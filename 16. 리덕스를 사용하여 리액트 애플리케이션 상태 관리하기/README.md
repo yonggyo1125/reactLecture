@@ -1169,5 +1169,5 @@ const TodosContainer = () => {
   ...
 };
 
-export default React.memo(TodosContainer);l
+export default React.memo(TodosContainer);
 ```

@@ -1,5 +1,7 @@
 # 리액트 강의
 
+- [강의자료&동영상강의](https://drive.google.com/drive/folders/1Zdst5HHUswSxr8uT0HNhbAGouZi-_k2b?usp=sharing)
+
 ## 컴포넌트 
 
 - 클래스형 컴포넌트 
@@ -7,21 +9,21 @@
 - props
 - state
 
-- [동영상강의](https://drive.google.com/drive/folders/12jmCwioorQrunehjwDCmN0HmqRCAGMha?usp=drive_link)
+
 
 ## 이벤트 핸들링 
 
 - 리액트의 이벤트 시스템
 - 이벤트 핸들링 익히기
 - 함수 컴포넌트로 구현하기 
-- [동영상강의](https://drive.google.com/drive/folders/1lNTQGpCky0dvrHnfr7qaxcX7x611qYNK?usp=drive_link)
+
 
 ## ref: DOM에 이름 달기
 
 - ref는 어떤 상황에서 사용해야 될까?
 - ref 사용
 - 컴포넌트에 ref 달기
-- [동영상강의](https://drive.google.com/drive/folders/19BEZml8JJELUHwUOFFY5uqR8NoM2yiAH?usp=drive_link)
+
 
 ## 컴포넌트 반복 
 
@@ -29,7 +31,7 @@
 - 데이터 배열을 컴포넌트 배열을 변환하기 
 - key
 - 응용
-- [동영상강의](https://drive.google.com/drive/folders/1WrZGnX_h8Yk9NhkkLn1hr-sDfKJlVG3C?usp=drive_link)
+
 
 ## 컴포넌트 라이프사이클 메서드
 

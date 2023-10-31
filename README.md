@@ -1,6 +1,6 @@
 # 리액트 강의
 
-- [강의자료&동영상강의](https://drive.google.com/drive/folders/1Zdst5HHUswSxr8uT0HNhbAGouZi-_k2b?usp=sharing)
+- [강의자료&동영상강의](https://drive.google.com/drive/folders/1lLzyoA4PE31-ZymEEaiHb-mfByl4Wsel?usp=sharing)
 
 ## 컴포넌트 
 

@@ -323,13 +323,88 @@ export default App;
 - 어떤 값이 undefined일 수도 있다면, OR(||) 연산자를 사용하면 해당 값이 undefined일 때 사용할 값을 지정할 수 있으므로 간단하게 오류를 방지할 수 있습니다. 
 
 ```jsx
+import './App.css';
 
+function App() {
+    const name = undefined;
+    return name || '값이 undefined입니다.';
+}
 
+export default App;
+```
+
+- JSX 내부에서 undefined를 렌더링하는 것은 괜찮습니다.
+
+```jsx
+import './App.css';
+
+function App() {
+    const name = undefined;
+    return <div>{name}</div>
+}
+```
+
+- name 값이 undefined일 때 보여 주고 싶은 문구가 있다면 다음과 같이 코드를 작성하면 됩니다.
+
+```jsx
+import './App.css';
+
+function App() {
+    const name = undefined;
+    return <div>{name || '리액트'}</div>;
+}
+
+export default App;
 ```
 
 ## 인라인 스타일링 
 
+- 리액트에서 DOM 요소에 스타일을 적용할 때는 문자열 형태로 넣는 것이 아니라 객체 형태로 넣어 주어야 합니다. 
+- 스타일 이름 중에서 background-color 처럼 - 문자가 포함되는 이름이 있을 경우 - 문자를 없애고 카멜 표기법(camelCase)으로 작성해야 합니다. 따라서 background-color는 backgroundColor로 작성합니다. 
+
+> src/App.js 
+
+```jsx
+function App() {
+    const name = '리액트';
+    const style = {
+        backgroundColor: 'black',
+        color: 'aqua',
+        fontSize: '48px',
+        fontWeight: 'bold',
+        padding: 16 // 단위를 생략하면 px로 지정됩니다.
+    };
+    return <div style={style}>{name}</div>;
+}
+
+export default App;
+```
+
+- 객체를 미리 선언하지 않고 바로 style 값을 지정하고 싶은 경우 다음과 같이 작성
+
+```jsx
+function App() {
+    const name = '리액트';
+    return (
+        <div style={{
+            backgroundColor: 'black',
+            color: 'aqua',
+            fontSize: '48px',
+            fontWeight: 'bold',
+            padding: 16 // 단위를 생략하면 px로 지정됩니다.
+        }}
+        >
+            {name}
+        </div>
+    );
+}
+
+export default App;
+```
+
 ## class 대신 className 
+
+
 
 ## 꼭 닫아야 하는 태그
 

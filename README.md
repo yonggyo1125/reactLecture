@@ -2,6 +2,19 @@
 
 - [강의자료&동영상강의](https://drive.google.com/drive/folders/1lLzyoA4PE31-ZymEEaiHb-mfByl4Wsel?usp=sharing)
 
+## 리액트 시작
+
+- 리액트의 특징
+- 작업환경 설정
+
+## JSX
+
+- 코드 이해하기
+- JSX란?
+- JSX의 장점
+- JSX 문법
+- ESLint와 Prettier 적용하기
+
 ## 컴포넌트 
 
 - 클래스형 컴포넌트 
@@ -122,3 +135,9 @@
 - 컨테이너 컴포넌트 만들기
 - 리덕스 더 편하게 사용하기
 - Hooks를 사용하여 컨테이너 컴포넌트 만들기
+
+
+## 코드 스플리팅
+
+- 자바스크립트 함수 비동기 로딩
+- React.lazy와 Suspense를 통한 컴포넌트 코드 스플리팅

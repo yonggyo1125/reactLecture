@@ -404,10 +404,109 @@ export default App;
 
 ## class 대신 className 
 
+- 일반 HTML에서 CSS 클래스를 사용할 때는 \<div class="myclass"\>\</div\>와 같이 class라는 속성을 설정합니다. 하지만 JSX에서는 class가 아닌 <code>className</code>으로 설정해 주어야 합니다. 
 
+```jsx
+import './App.css';
+
+function App() {
+    const name = '리액트';
+    return <div className='react'>{name}</div>;
+}
+
+export default App;
+```
+
+- JSX를 작성할 때 CSS 클래스를 설정하는 과정에서 className이 아닌 class 값을 설정해도 스타일이 적용되기는 합니다. 하지만 그렇게 사용하면 브라우저 개발자 도구의 Console 탭에 경고가 나타납니다. 
+- 이전에는 class로 CSS 클래스를 설정할 때 오류가 발생하고 CSS 클래스가 적용되지 않았는데, 리액트 V16 이상부터는 class를 className으로 변환시켜 주고 경고를 띄웁니다.
 
 ## 꼭 닫아야 하는 태그
 
+- HTML 코드를 작성할 때 가끔 태그를 닫지 않은 상태로 코드를 작성하기도 합니다. 예를 들면 input HTML 요소는 \<input\>\</input\>이라고 입력하지 않고 \<input\>이라고만 입력해도 작동합니다.
+- 그러나 JSX에서는 태그를 닫지 않으면 오류가 발생합니다. 
+- 다음과 같이 App.js 파일의 코드를 수정해 보세요.
+
+> src/App.js
+
+```jsx
+import './App.css';
+
+function App() {
+    const name = '리액트';
+    return (
+        <>
+            <div className="react">{name}</div>
+            <input>
+        </>
+    );
+}
+```
+
+- 코드를 저장하면 개발 서버가 실행 중인 터미널에 오류가 나타날 것입니다.
+- 이 오류를 해결하려면 다음과 같이 input 태그를 닫아 주어야 합니다.
+
+> src/App.js
+
+```jsx
+import './App.css';
+
+function App() {
+    const name = '리액트';
+    return (
+        <>
+            <div className="react">{name}</div>
+            <input></input>
+        </>
+    );
+}
+```
+
+- 태그 사이에 별도의 내용이 들어가지 않는 경우에는 다음과 같이 작성할 수도 있습니다. 이러한 태그를 self-closing 태그라고 부릅니다. 태그를 선언하면서 동시에 닫을 수 있는 태그
+
+> src/App.js
+
+```jsx
+import './App.css';
+
+function App() {
+    const name = '리액트';
+    return (
+        <>
+            <div className="react">{name}</div>
+            <input />
+        </>
+    );
+}
+```
+
 ## 주석 
 
+- JSX 안에서 주석을 작성하는 방법은 일반 자바스크립트에서 주석을 작성할 때와 조금 다릅니다. 
+
+```jsx
+import './App.css';
+
+function App() {
+    const name = '리액트';
+    return (
+        <>
+            {/* 주석은 이렇게 작성합니다. */} 
+            <div className="react" // 시작 태그를 여러 줄로 작성하게 된다면 여기에 주석을 작성할 수 있습니다.
+            >{name}</div>
+            <input />
+            // 하지만 이런 주석이나 
+            /* 이런 주석은 페이지에 그대로 나타나게 됩니다. */
+        </>
+    );
+}
+```
+
+- JSX 내부에서 주석을 작성할 때는 {/* ... */}와 같은 형식으로 작성합니다. 
+- 시작 태그를 여러 줄로 작성할 때는 그 내부에서 // ... 와 같은 형태의 주석도 작성할 수 있습니다. 
+- 만약 일반 자바스크립트에서 주석을 작성할 때처럼 아무 데나 주석을 작성하면 그 주석은 페이지에 고스란히 나타납니다.
+
 # ESLint와 Prettier 적용하기
+
+## ESLint
+
+## Prettier

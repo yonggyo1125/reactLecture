@@ -136,3 +136,213 @@ import를 함수로 사용하면 Promise를 반환합니다. 이렇게 import를
 <b>Hello React!</b>를 클릭하는 시점에 새로운 자바스크립트 파일을 불러올 것입니다. 불러온 파일의 내용을 확인해 보면 notify에 관련된 코드만 들어 있습니다. 
 
 # React.lazy와 Suspense를 통한 컴포넌트 코드 스플리팅
+
+
+> 코드 스플리팅을 위해 리액트에 내장된 기능으로 유틸 함수인 <code>React.lazy</code>와 컴포넌트인 <code>Suspense</code>가 있습니다. 이 기능은 리액트 16.6 버전부터 도입되었습니다. 이전 버전에서는 <code>import</code> 함수를 통해 불러온 다음, 컴포넌트 자체를 state에 넣는 방식으로 구현해야 합니다.
+
+## state를 사용한 코드 스플리팅
+
+<code>React.lazy</code>를 사용하기 앞서, <code>React.lazy</code> 없이 컴포넌트의 코드를 스플리팅하는 방법을 알아봅시다. 
+
+> SplitMe.js
+
+```jsx
+const SplitMe = () => {
+    return <div>SplitMe</div>;
+};
+
+export default SplitMe;
+```
+
+App 컴포넌트 클래스형 컴포넌트로 전환해 주세요. 그리고 handleClick 메서드를 만들고, 그 내부에 SplitMe 컴포넌트를 불러와 state에 넣겠습니다. 또한 render 함수에서는 state안에 있는 SplitMe가 유효하다면 SplitMe를 렌더링해 주어야 합니다.
+
+> src/App.js
+
+```jsx
+import { Component } from 'react';
+import logo from './logo.svg';
+import './App.css';
+
+class App extends Component {
+    state = {
+        SplitMe: null  
+    };
+    handleClick = async () => {
+        const loadedModule = await import('./SplitMe');
+        this.setState({
+            SplitMe: loadedModule.default
+        });
+    };
+    render() {
+        const { SplitMe } = this.state;
+        return (
+            <div className="App">
+                <header className="App-header">
+                    <img src={logo} className="App-logo" alt="logo" />
+                    <p onClick={this.handleClick}>Hello React!</p>
+                    {SplitMe && <SplitMe />}
+                </header>
+            </div>
+        );
+    }
+}
+
+export default App;
+```
+
+브라우저의 개발자 도구에서 **Network** 탭을 열고 **Hello React!**를 눌러 보면 SplitMe 컴포넌트의 코드 스플리팅이 이루어지는 것을 확인할 수 있습니다.<br>
+state를 사용하여 컴포넌트 코드 스플리팅을 하는 것이 그렇게 어렵지는 않지만. 매번 state를 선언해 주어야 한다는 점이 조금 불편합니다.
+
+
+## React.lazy와 Suspense 사용하기
+
+> <code>React.lazy</code>와 <code>Suspense</code>를 사용하면 코드 스플리팅을 하기 위해 State를 따로 선언하지 않고도 정말 간편하게 컴포넌트의 코드 스플리팅을 할 수 있습니다. 먼저 사용방법을 알아보고 적용해 봅시다.
+
+<code>React.lazy</code>는 컴포넌트를 렌더링하는 시점에서 비동기적으로 로딩할 수 있게 해 주는 유틸 함수입니다. 사용방법은 다음과 같습니다.
+
+```javascript
+const SplitMe = React.lazy(() => import('./SplitMe'));
+```
+
+<code>Suspense</code>는 리액트 내장 컴포넌트로서 코드 스플리팅된 컴포넌트를 로딩하도록 발동시킬 수 있고, 로딩이 끝나지 않았을 떄 보여줄 UI를 설정할 수 있습니다. 사용 방법은 다음과 같습니다.
+
+```jsx
+import { Suspense } from 'react';
+
+...
+
+<Suspense fallback={<div>loading...</div>}>
+    <SplitMe />
+</Suspense>
+```
+
+<code>Suspense</code>에서 <code>fallback props</code>를 통해 로딩 중에 보여 줄 JSX를 지정할 수 있습니다.<br><br>
+프로젝트에 적용하겠습니다. 이제는 클래스형 컴포넌트를 사용할 필요가 없으니 다시 함수형 컴포넌트로 전환하겠습니다.
+
+> src/App.js
+
+```jsx
+import { useState, Suspense } from 'react';
+import logo from './logo.svg';
+import './App.css';
+const SplitMe = React.lazy(() => import('./SplitMe'));
+
+function App() {
+    const [visible, setVisible] = useState(false);
+    const onClick = () => {
+        setVisible(true);
+    };
+    
+    return (
+        <div className="App">
+            <header className="App-header">
+                <img src={logo} className="App-logo" alt="logo" />
+                <p onClick={onClick}>Hello React!</p>
+                <Suspense fallback={<div>loading...</div>}>
+                    {visible && <SplitMe />}
+                </Suspense>
+            </header>
+        </div>
+    );
+}
+
+export default App;
+```
+
+## Loadable Components를 통한 코드 스플리팅
+
+> <code>Loadable Components</code>는 코드 스플리팅을 편하게 하도록 도와주는 서드파티 라이브러리입니다. 이 라이브러리의 이점은 서버 사이드 렌더링을 지원한다는 것입니다(React.lazy와 Suspense는 아직 서버 사이드 렌더링을 지원하지 않습니다.) 또한 렌더링하기 전에 필요할 때 스플리팅된 파일을 미리 불러올 수 있는 기능도 있습니다.
+> 
+> 서버 사이드 렌더링이란 웹 서비스의 초기 로딩 속도 개선, 캐싱 및 검색 엔진 최적화를 가능하게 해 주는 기술입니다. 서버 사이드 렌더링을 사용하면 웹 서비스의 초기 렌더링을 사용자의 브라우저가 아닌 서버 쪽에서 처리합니다. 사용자자는 서버에서 렌더링한 html 결과물을 받아 와서 그대로 사용하기 때문에 초기 로딩 속도도 개선되고, 검색 엔진에서 크롤링할 때도 문제없습니다. 여기에서는 서버 사이드 렌더링 없이 Loadable Components의 기본적인 사용법만 알아보겠습니다.
+
+- 라이브러리 설치
+
+```
+yarn add @loadable/component
+```
+
+- 사용법은 <code>React.lazy</code>와 비슷, 단 <code>Suspense</code>를 사용할 필요는 없습니다.
+
+> src/App.js 
+
+```jsx
+import { useState } from 'react';
+import logo from './logo.svg';
+import './App.css';
+import loadable from '@loadable/component';
+const SplitMe = loadable(() => import('./SplitMe'));
+
+
+function App() {
+    const [visible, setVisible] = useState(false);
+    const onClick = () => {
+        setVisible(true);
+    };
+    
+    return (
+        <div className="App">
+            <header className="App-header">
+                <img src={logo} className="App-logo" alt="logo" />
+                <p onClick={onClick}>Hello React!</p>
+                {visible && <SplitMe />}
+            </header>
+        </div>
+    );
+}
+
+export default App;
+```
+
+- 로딩 중에 다른 UI를 보여주고 싶다면 <code>loadable</code>을 사용하는 부분을 다음과 같이 수정합니다.
+
+> src/App.js - loadable 사용 부분
+
+```jsx
+const SplitMe = loadable(() => import('./SplitMe'), {
+    fallback: <div>Loading...</div>
+});
+```
+
+- 컴포넌트를 미리 불러오는(preload) 방법을 알아보겠습니다. 코드를 다음과 같이 수정합니다.
+
+> src/App.js
+
+```jsx
+import { useState } from 'react';
+import logo from './logo.svg';
+import './App.css';
+import loadable from '@loadable/component';
+const SplitMe = loadable(() => import('./SplitMe'), {
+    fallback: <div>loading...</div>
+});
+
+
+function App() {
+    const [visible, setVisible] = useState(false);
+    const onClick = () => {
+        setVisible(true);
+    };
+    
+    const onMouseOver = () => {
+        SplitMe.preload();
+    };
+    
+    return (
+        <div className="App">
+            <header className="App-header">
+                <img src={logo} className="App-logo" alt="logo" />
+                <p onClick={onClick} onMouseOver={onMouseOver}>
+                    Hello React!
+                </p>
+                {visible && <SplitMe />}
+            </header>
+        </div>
+    );
+}
+
+export default App;
+```
+
+이렇게 수정하면 마우스 커서를 **Hello React!** 위에 올리기만 해도 로딩이 시작되며, 클릭했을 때 렌더링됩니다. 브라우저에서 개발자 도구를 열고, 커서를 올리는 시점에 파일이 불러와지는지 확인해 보세요. 이런 기능을 구현하면 나중에 사용자에게 더 좋은 경험을 제공할 수 있습니다.<br><br>
+
+<code>Loadable Components</code>는 미리 불러오는 기능 외에도 타임아웃, 로딩 UI 딜레이, 서버 사이드 렌더링 호환등 다양한 기능을 제공합니다. 자세한 내용은 공식 문서를 확인하세요.

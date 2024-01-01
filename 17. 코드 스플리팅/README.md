@@ -61,4 +61,78 @@ export default App;
 
 # 자바스크립트 함수 비동기 로딩 
 
+컴포넌트 코드를 스플리팅하기 앞서 일반 자바스크립트 함수를 스플리팅해 보겠습니다. src 디렉터리에 notify.js 파일을 생성하여 다음 함수를 작성해보세요.
+
+
+> notify.js
+
+```jsx
+export default function notify() {
+    alert('안녕하세요!');
+}
+```
+
+**Hello React!** 문구를 누르면 notify 함수가 실행되도록 App 컴포넌트를 수정합니다.
+
+> src/App.js
+
+```jsx
+import logo from './logo.svg';
+import './App.css';
+import notify from './notify';
+
+function App() {
+    const onClick = () => {
+        notify();
+    };
+    
+    return (
+        <div className="App">
+            <header className="App-header">
+                <img src={logo} className="App-logo" alt="logo" />
+                <p onClick={onClick}>Hello React</p>
+            </header>
+        </div>
+    );
+}
+
+export default App;
+```
+
+이렇게 코드를 작성하고 빌드하면 notify 코드가 main 파일 안에 들어가게 됩니다. 하지만 다음과 같이 import를 상단에서 하지 않고 <code>import()</code> 함수 형태로 메서드 안에서 사용하면, 파일을 따로 분리시켜서 저장합니다. 그리고 실제 함수가 필요한 지점에 파일을 불러와서 함수를 사용할 수 있습니다. <br><br>
+
+코드를 다름과 같이 수정합니다.
+
+> src/App.js
+
+```jsx
+import logo from './logo.svg';
+import './App.css';
+
+function App() {
+    const onClick = () => {
+        import('./notify').then(result => result.default());
+    };
+    
+    return (
+        <div className="App">
+            <header className="App-header">
+                <img src={logo} className="App-logo" alt="logo" />
+                <p onClick={onClick}>Hello React</p>
+            </header>
+        </div>
+    );
+}
+
+export default App;
+```
+
+import를 함수로 사용하면 Promise를 반환합니다. 이렇게 import를 함수로 사용하는 문법은 비록 아직 표준 자바스크립트가 아니지만, stage-3 단계에 있는 dynamic import라는 문법입니다. 현재는 웹팩에서 지원하고 있으므로 별도의 설정 없이 프로젝트에 바로 사용할 수 있습니다. 이 함수를 통해 모듈을 불러올 때 모듈에서 <code>default</code>로 내보낸 것은 <code>result.default</code>를 참조해야 사용할 수 있습니니다.<br><br>
+
+브라우저를 열고 개발자 도구의 Network 탭을 연 다음, Hello React!를 클릭해 보세요.
+
+![image3](https://raw.githubusercontent.com/yonggyo1125/reactLecture/master/17.%20%EC%BD%94%EB%93%9C%20%EC%8A%A4%ED%94%8C%EB%A6%AC%ED%8C%85/images/image3.png)
+
+<b>Hello React!</b>를 클릭하는 시점에 새로운 자바스크립트 파일을 불러올 것입니다. 불러온 파일의 내용을 확인해 보면 notify에 관련된 코드만 들어 있습니다. 
+
 # React.lazy와 Suspense를 통한 컴포넌트 코드 스플리팅

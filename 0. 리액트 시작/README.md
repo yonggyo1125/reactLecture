@@ -13,12 +13,41 @@ render() { ... }
 
 - 이 함수는 컴포넌트가 어떻게 생겼는지 정의하는 역할을 합니다. 이 함수는 html 형식의 문자열을 반환하지 않고, 뷰가 어떻게 생겼고, 어떻게 작동하는지에 대한 정보를 지닌 객체를 반환합니다. 컴포넌트 내부에는 또 다른 컴포넌트들이 들어갈 수 있습니다. 이때 render 함수를 실행하면 그 내부에 있는 컴포넌트들도 재귀적으로 렌더링합니다. 이렇게 최상위 컴포넌트의 렌더링 작업이 끝나면 지니고 있는 정보들을 사용하여 HTML 마크업(markup)을 만들고, 이를 우리가 정하는 실제 페이지 DOM 요소 안에 주입합니다.
 
+![image1](https://raw.githubusercontent.com/yonggyo1125/reactLecture/master/0.%20%EB%A6%AC%EC%95%A1%ED%8A%B8%20%EC%8B%9C%EC%9E%91/images/image1.png)
+
 - 컴포넌트를 실제 페이지에 렌더링할 때는 분리된 두 가지 절차를 따릅니다.
   - 문자열 형태의 HTML 코드를 생성됩니다.
   - 특정 DOM에 해당 내용을 주입하면 이벤트가 적용됩니다.
 
+
 ## 조화 과정 
 
+- 리액트에서 뷰를 업데이트할 때는 "업데이트 과정을 거친다"라고 하기 보다는 "<b>조화 과정(reconciliation)</b>을 거친다"라고 하는 것이 더 정확한 표현입니다. 컴포넌트에서 데이터에 변화가 있을 때 변화에 따라 뷰가 변형되는 것처럼 보이지만, 사실 새로운 요소로 갈아 끼우기 때문입니다.
+- 이 작업은 render 함수가 맡아서 합니다. 컴포넌트는 데이터를 업데이트했을 때 단순히 업데이트한 값을 수정하는 것이 아니라, 새로운 데이터를 가지고 render 함수를 또 다시 호출하고 그 데이터를 지닌 뷰를 생성해 냅니다.
+- 하지만 이때 render 함수가 반환하는 결과를 곧바로 DOM에 반영하지 않고, 이전에 render 함수가 만들었던 컴포넌트 정보와 현재 render 함수가 만든 컴포넌트 정보를 비교합니다.
+
+![image2](https://raw.githubusercontent.com/yonggyo1125/reactLecture/master/0.%20%EB%A6%AC%EC%95%A1%ED%8A%B8%20%EC%8B%9C%EC%9E%91/images/image2.png)
+
+- 자바스크립트를 사용하여 두 가지 뷰를 최소한의 연산으로 비교한 후, 둘의 차이를 알아내 최소한의 연산으로 DOM 트리를 업데이트하는 것
+
+![image3](https://raw.githubusercontent.com/yonggyo1125/reactLecture/master/0.%20%EB%A6%AC%EC%95%A1%ED%8A%B8%20%EC%8B%9C%EC%9E%91/images/image3.png)
+
+- 결국 방식 자체는 루투 노드부터 시작하여 전체 컴포넌트를 처음부터 다시 렌더링하는 것처럼 보이지만 사실 최적의 자원을 사용하여 이를 수행하는 것입니다.
+
 # 리액트의 특징
+
+## Virtual DOM
+
+> 리액트의 주요 특징 중 하나는 Virtual DOM을 사용하는 것입니다.
+
+
+### DOM이란?
+
+- DOM은 Document Object Model의 약자입니다. 즉, 객체로 문서 구조를 표현하는 방법으로 XML이나 HTML로 작성합니다.
+- 웹 브라우저는 DOM을 활용하여 객체에 자바스크립트와 CSS를 적용합니다. DOM은 트리 형태라서 특정 노드를 찾거나 수정하거나 제거하거나 원하는 곳에 삽입할 수 있습니다.
+
+![image4](https://raw.githubusercontent.com/yonggyo1125/reactLecture/master/0.%20%EB%A6%AC%EC%95%A1%ED%8A%B8%20%EC%8B%9C%EC%9E%91/images/image4.png)
+
+
 
 # 작업환경 설정
